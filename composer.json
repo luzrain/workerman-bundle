@@ -1,0 +1,39 @@
+{
+    "name": "luzrain/workerman-bundle",
+    "description": "Run symfony application with workerman runtime",
+    "keywords": ["workerman", "symfony", "runtime", "php-runtime"],
+    "homepage": "https://github.com/luzrain/workerman-bundle",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anton Zenkov",
+            "email": "anton.z@live.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-pcntl": "*",
+        "ext-posix": "*",
+        "league/mime-type-detection": "^1.13",
+        "nyholm/psr7": "^1.8",
+        "symfony/config": "^6.3",
+        "symfony/dependency-injection": "^6.3",
+        "symfony/http-kernel": "^6.3",
+        "symfony/psr-http-message-bridge": "^2.3",
+        "symfony/runtime": "^6.3",
+        "workerman/psr7": "^1.4",
+        "workerman/workerman": "^4.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Luzrain\\WorkermanBundle\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/runtime": true
+        }
+    }
+}
