@@ -1,5 +1,5 @@
 # Workerman runtime for symfony applications
-[![PHP >=8.1](https://img.shields.io/badge/PHP->=8.1-777bb3.svg?style=flat)](https://www.php.net/releases/8.1/en.php)
+[![PHP >=8.2](https://img.shields.io/badge/PHP->=8.2-777bb3.svg?style=flat)](https://www.php.net/releases/8.2/en.php)
 ![Symfony ^6.3](https://img.shields.io/badge/Symfony-^6.3-374151.svg?style=flat)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/luzrain/workerman-bundle/tests.yaml?branch=master)](../../actions/workflows/tests.yaml)
 
@@ -28,22 +28,22 @@ return [
 # config/packages/workerman.yaml
 
 workerman:
-  server:
-    # Name of the worker processes
+  # Unix user of processes. Default: current user
+  #user: app
+  # Unix group of processes. Default: current group
+  #group: app
+
+  # Webserver configuration
+  webserver:
     name: 'Symfony Workerman Server'
-    # Listen address (can be http or https)
+    # Listening address (can be http or https)
     listen: http://0.0.0.0:80
     # Path to local certificate file on filesystem. Necessary if listen address is https
     #local_cert: '%kernel.project_dir%/crt/localhost.crt'
     # Path to local private key file on filesystem. Necessary if listen address is https
     #local_pk: '%kernel.project_dir%/crt/localhost.key'
-    # Number of worker processes (default is the number of cpu cores*2 in the prod, and 1 in other env)
+    # Number of worker processes. Default: number of cpu cores*2
     processes: 1
-    # Unix user of process
-    user: app
-    # Unix group of process
-    group: app
-
 ```
 
 ### Start application

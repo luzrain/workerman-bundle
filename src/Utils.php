@@ -9,7 +9,7 @@ final class Utils
     public static function cpuCount(): int
     {
         // Windows does not support the number of processes setting.
-        if (\DIRECTORY_SEPARATOR === '\\') {
+        if (self::isWindows()) {
             return 1;
         }
 
@@ -17,9 +17,14 @@ final class Utils
             return 1;
         }
 
-        return \strtolower(PHP_OS) === 'darwin'
+        return \strtolower(\PHP_OS) === 'darwin'
             ? (int) \shell_exec('sysctl -n machdep.cpu.core_count')
             : (int) \shell_exec('nproc')
         ;
+    }
+
+    public static function isWindows(): bool
+    {
+        return \DIRECTORY_SEPARATOR !== '/';
     }
 }

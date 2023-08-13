@@ -9,33 +9,66 @@ use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 
 final class ConfigLoader implements CacheWarmerInterface
 {
-    private array $config = [];
     private ConfigCache $cache;
+    private array $workermanConfig = [];
+    private array $processConfig = [];
+    private array $schedulerConfig = [];
 
-    public function __construct(private string $cacheDir, bool $isDebug)
+    public function __construct(string $cacheDir, bool $isDebug)
     {
-        $this->cache = new ConfigCache(sprintf('%s/workerman/config.cache.php', $this->cacheDir), $isDebug);
+        $this->cache = new ConfigCache(sprintf('%s/workerman/config.cache.php', $cacheDir), $isDebug);
+
+        if (is_file($this->cache->getPath())) {
+            $config = require $this->cache->getPath();
+            $this->workermanConfig = $config[0];
+            $this->processConfig = $config[1];
+            $this->schedulerConfig = $config[2];
+        }
     }
 
-    public function setConfig(array $config): void
+    public function setWorkermanConfig(array $config): void
     {
-        $this->config = $config;
-        $this->warmUp($this->cacheDir);
+        $this->workermanConfig = $config;
     }
 
-    public function getConfig(): array
+    public function setProcessConfig(array $config): void
     {
-        return require $this->cache->getPath();
+        $this->processConfig = $config;
+    }
+
+    public function setSchedulerConfig(array $config): void
+    {
+        $this->schedulerConfig = $config;
+    }
+
+    public function getWorkermanConfig(): array
+    {
+        return $this->workermanConfig;
+    }
+
+    public function getProcessConfig(): array
+    {
+        return $this->processConfig;
+    }
+
+    public function getSchedulerConfig(): array
+    {
+        return $this->schedulerConfig;
     }
 
     public function isOptional(): bool
     {
-        return true;
+        return false;
     }
 
     public function warmUp(string $cacheDir): array
     {
-        $this->cache->write(sprintf('<?php return %s;', var_export($this->config, true)), []);
+        $config = [
+            0 => $this->workermanConfig,
+            1 => $this->processConfig,
+            2 => $this->schedulerConfig,
+        ];
+        $this->cache->write(sprintf('<?php return %s;', var_export($config, true)), []);
         return [];
     }
 }

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle;
 
+use Luzrain\WorkermanBundle\Worker\SchedulerWorker;
+use Luzrain\WorkermanBundle\Worker\HttpServerWorker;
+use Luzrain\WorkermanBundle\Worker\SupervisorWorker;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Runtime\RunnerInterface;
 use Workerman\Connection\TcpConnection;
@@ -19,39 +23,47 @@ final class Runner implements RunnerInterface
     {
         $this->kernel->boot();
         $configLoader = new ConfigLoader($this->kernel->getCacheDir(), $this->kernel->isDebug());
-        $config = $configLoader->getConfig();
-        $serverConfig = $config['server'];
+        $config = $configLoader->getWorkermanConfig();
+        $schedulerConfig = $configLoader->getSchedulerConfig();
+        $processConfig = $configLoader->getProcessConfig();
 
-        if (str_starts_with($serverConfig['listen'], 'https://')) {
-            $listen = str_replace('https://', 'http://', $serverConfig['listen']);
-            $transport = 'ssl';
-            $context = ['ssl' => [
-                'local_cert' => $serverConfig['local_cert'],
-                'local_pk' => $serverConfig['local_pk'],
-            ]];
-        } else {
-            $listen = $serverConfig['listen'];
-            $transport = 'tcp';
-            $context = [];
+        $varRunDir = dirname($config['pid_file']);
+        if (!is_dir($varRunDir)) {
+            mkdir($varRunDir);
         }
 
-        $worker = new Worker($listen, $context);
+        TcpConnection::$defaultMaxPackageSize = $config['max_package_size'];
+        Worker::$pidFile = $config['pid_file'] ?? '';
+        Worker::$logFile = $config['log_file'];
+        Worker::$stdoutFile = $config['stdout_file'];
+        Worker::$stopTimeout = $config['stop_timeout'];
+        Worker::$onMasterReload = $this->onMasterReload(...);
 
-        TcpConnection::$defaultMaxPackageSize = $serverConfig['max_package_size'];
-        $worker::$pidFile = $serverConfig['pid_file'];
-        $worker::$logFile = $serverConfig['log_file'];
-        $worker::$stdoutFile = $serverConfig['stdout_file'];
-        $worker::$eventLoopClass = $serverConfig['event_loop'];
-        $worker::$stopTimeout = $serverConfig['stop_timeout'];
-        $worker->name = $serverConfig['name'];
-        $worker->count = $serverConfig['processes'];
-        $worker->user = $serverConfig['user'] ?? '';
-        $worker->group = $serverConfig['group'] ?? '';
-        $worker->transport = $transport;
-        $worker::$onMasterReload = $this->onMasterReload(...);
-        $worker->onWorkerStart = $this->onWorkerStart(...);
+        // Start http server
+        if ($config['webserver']['processes'] > 0) {
+            new HttpServerWorker(new RequestHandler($this->kernel), $config);
+        }
 
-        $worker::runAll();
+        // Start scheduler worker
+        if (!empty($schedulerConfig)) {
+            /** @var ContainerInterface $scheduledJobsLocator */
+            $scheduledJobsLocator = $this->kernel->getContainer()->get('workerman.scheduledjob_locator');
+            new SchedulerWorker($scheduledJobsLocator, $config, $schedulerConfig);
+        }
+
+        // Start File monitor worker
+//        if ($this->kernel->isDebug() && !Worker::$daemonize) {
+//            new FileMonitorWorker($config);
+//        }
+
+        // Start user process workers (Windows does not support custom processes)
+        if (!empty($processConfig) && !Utils::isWindows()) {
+            /** @var ContainerInterface $processLocator */
+            $processLocator = $this->kernel->getContainer()->get('workerman.process_locator');
+            new SupervisorWorker($processLocator, $config, $processConfig);
+        }
+
+        Worker::runAll();
 
         return 0;
     }
@@ -67,11 +79,5 @@ final class Runner implements RunnerInterface
                 }
             }
         }
-    }
-
-    private function onWorkerStart(Worker $worker): void
-    {
-        $handler = new RequestHandler($this->kernel);
-        $worker->onMessage = $handler->onMessage(...);
     }
 }
