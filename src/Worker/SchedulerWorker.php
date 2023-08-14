@@ -27,6 +27,7 @@ final class SchedulerWorker
             \pcntl_signal(\SIGCHLD, \SIG_IGN);
             foreach ($cronJobConfig as $serviceId => $serviceConfig) {
                 $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
+                echo sprintf('[%s] Task "%s" scheduled: %s', self::PROCESS_NAME, $serviceConfig['name'], $trigger) . "\n";
                 $service = $container->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
                 $this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
@@ -38,8 +39,10 @@ final class SchedulerWorker
     {
         $currentDate = new \DateTimeImmutable();
         $nextRunDate = $trigger->getNextRunDate($currentDate);
-        $interval = $nextRunDate->getTimestamp() - $currentDate->getTimestamp();
-        Timer::add($interval, $this->runCallback(...), [$trigger, $callback, $name], false);
+        if ($nextRunDate !== null) {
+            $interval = $nextRunDate->getTimestamp() - $currentDate->getTimestamp();
+            Timer::add($interval, $this->runCallback(...), [$trigger, $callback, $name], false);
+        }
     }
 
     private function runCallback(TriggerInterface $trigger, \Closure $callback, string $name): void
@@ -51,9 +54,9 @@ final class SchedulerWorker
 
         $pid = \pcntl_fork();
         if ($pid === -1) {
-            echo(\sprintf("Cron task \"%s\" start error!\n", $name));
+            echo(\sprintf('[%s] Task "%s" start error!', self::PROCESS_NAME, $name)) . "\n";
         } else if ($pid > 0) {
-            echo(\sprintf("Cron task \"%s\" starts...\n", $name));
+            echo(\sprintf('[%s] Task "%s" started', self::PROCESS_NAME, $name)) . "\n";
             $this->scheduleCallback($trigger, $callback, $name);
         } else {
             Timer::delAll();
@@ -63,8 +66,8 @@ final class SchedulerWorker
                 $callback();
             } finally {
                 $this->deleteTaskPid($callback);
+                \posix_kill(\posix_getpid(), \SIGUSR1);
             }
-            \posix_kill(\posix_getpid(), \SIGUSR1);
         }
     }
 
