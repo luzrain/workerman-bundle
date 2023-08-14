@@ -11,6 +11,7 @@ final class AsScheduledJob
         public string|null $name = null,
         public string|null $schedule = null,
         public string|null $method = null,
+        public int|null $jitter = null,
     ) {
     }
 }

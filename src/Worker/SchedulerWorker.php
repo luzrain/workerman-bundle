@@ -26,17 +26,10 @@ final class SchedulerWorker
         $worker->onWorkerStart = function(Worker $worker) use ($container, $cronJobConfig) {
             \pcntl_signal(\SIGCHLD, \SIG_IGN);
             foreach ($cronJobConfig as $serviceId => $serviceConfig) {
-                //$trigger = TriggerFactory::create('2023-08-15T15:19:21+03:00');
-                //$trigger = TriggerFactory::create('10 seconds', 5);
-                $trigger = TriggerFactory::create('*/10 * * * *', 60);
-
-
-                dump((string) $trigger);
-                dump('now: ' . (new \DateTimeImmutable())->format('Y-m-d H:i:s'));
-                dump('nex: ' . $trigger->getNextRunDate(new \DateTimeImmutable())?->format('Y-m-d H:i:s'));
+                $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
                 $service = $container->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
-                //$this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
+                $this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
             }
         };
     }

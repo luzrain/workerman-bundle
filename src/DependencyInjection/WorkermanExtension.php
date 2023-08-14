@@ -45,6 +45,7 @@ final class WorkermanExtension extends Extension
             'name' => $attribute->name ?? $reflector->getName(),
             'schedule' => $attribute->schedule,
             'method' => $attribute->method,
+            'jitter' => $attribute->jitter,
         ]);
     }
 }
