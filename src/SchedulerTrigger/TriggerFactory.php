@@ -29,7 +29,8 @@ final class TriggerFactory
 
         $trigger = match (true) {
             $expression instanceof \DateTimeImmutable => new DateTimeTrigger($expression),
-            count(explode(' ', $expression)) === 5 && str_contains($expression, '*') => new CronExpressionTrigger($expression),
+            count(explode(' ', $expression)) === 5 && str_contains($expression, '*'),
+            str_starts_with($expression, '@') => new CronExpressionTrigger($expression),
             default => new PeriodicalTrigger($expression),
         };
 
