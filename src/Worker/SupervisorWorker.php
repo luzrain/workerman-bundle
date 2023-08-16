@@ -10,7 +10,7 @@ use Workerman\Worker;
 
 final class SupervisorWorker
 {
-    private const PROCESS_NAME = 'Process';
+    private const PROCESS_TITLE = 'Process';
 
     public function __construct(private KernelFactory $kernelFactory, array $config, array $processConfig)
     {
@@ -20,12 +20,12 @@ final class SupervisorWorker
             }
 
             $worker = new Worker();
-            $worker->name = sprintf('[%s] %s', self::PROCESS_NAME, $serviceConfig['name'] ?? $serviceId);
+            $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $serviceConfig['name'] ?? $serviceId);
             $worker->user = $config['user'] ?? '';
             $worker->group = $config['group'] ?? '';
             $worker->count = $serviceConfig['processes'] ?? 1;
             $worker->onWorkerStart = function(Worker $worker) use ($serviceId, $serviceConfig) {
-                Worker::log(sprintf('[%s] "%s" Start', self::PROCESS_NAME, $serviceConfig['name'] ?? $serviceId));
+                Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $serviceConfig['name'] ?? $serviceId));
 
                 $kernel = $this->kernelFactory->createKernel();
                 $kernel->boot();

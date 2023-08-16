@@ -10,7 +10,7 @@ use Workerman\Worker;
 
 final class HttpServerWorker
 {
-    private const PROCESS_NAME = 'WebServer';
+    private const PROCESS_TITLE = 'WebServer';
 
     public function __construct(private KernelFactory $kernelFactory, array $config)
     {
@@ -30,13 +30,13 @@ final class HttpServerWorker
         }
 
         $worker = new Worker($listen, $context);
-        $worker->name = sprintf('[%s] %s', self::PROCESS_NAME, $config['webserver']['name']);
+        $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $config['webserver']['name']);
         $worker->user = $config['user'] ?? '';
         $worker->group = $config['group'] ?? '';
         $worker->count = $config['webserver']['processes'];
         $worker->transport = $transport;
         $worker->onWorkerStart = function(Worker $worker) use ($config) {
-            Worker::log(sprintf('[%s] "%s" Start', self::PROCESS_NAME, $config['webserver']['name']));
+            Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['webserver']['name']));
             $kernel = $this->kernelFactory->createKernel();
             $kernel->boot();
             $worker->onMessage = (new RequestHandler($kernel))(...);

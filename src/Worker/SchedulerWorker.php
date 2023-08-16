@@ -13,21 +13,20 @@ use Workerman\Worker;
 
 final class SchedulerWorker
 {
-    private const PROCESS_NAME = 'Scheduler';
+    private const PROCESS_TITLE = 'Scheduler';
 
     public function __construct(private KernelFactory $kernelFactory, array $config, array $cronJobConfig)
     {
         $worker = new Worker();
-        $worker->name = sprintf('[%s]', self::PROCESS_NAME);
+        $worker->name = sprintf('[%s]', self::PROCESS_TITLE);
         $worker->user = $config['user'] ?? '';
         $worker->group = $config['group'] ?? '';
         $worker->count = 1;
 
         $worker->onWorkerStart = function(Worker $worker) use ($cronJobConfig) {
-            Worker::log(sprintf('[%s] Start', self::PROCESS_NAME));
+            Worker::log(sprintf('[%s] started', self::PROCESS_TITLE));
 
             \pcntl_signal(\SIGCHLD, \SIG_IGN);
-
             $kernel = $this->kernelFactory->createKernel();
             $kernel->boot();
 
@@ -38,11 +37,11 @@ final class SchedulerWorker
                 try {
                     $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
                 } catch (\InvalidArgumentException) {
-                    Worker::log(sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_NAME, $serviceConfig['name'], $serviceConfig['schedule']));
+                    Worker::log(sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $serviceConfig['name'], $serviceConfig['schedule']));
                     continue;
                 }
 
-                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger "%s"', self::PROCESS_NAME, $serviceConfig['name'], $trigger));
+                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $serviceConfig['name'], $trigger));
                 $service = $locator->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
                 $this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
@@ -69,13 +68,14 @@ final class SchedulerWorker
 
         $pid = \pcntl_fork();
         if ($pid === -1) {
-            Worker::log(sprintf('[%s] Task "%s" start error!', self::PROCESS_NAME, $name));
+            Worker::log(sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $name));
         } else if ($pid > 0) {
-            Worker::log(sprintf('[%s] Task "%s" started', self::PROCESS_NAME, $name));
+            Worker::log(sprintf('[%s] Task "%s" called', self::PROCESS_TITLE, $name));
             $this->scheduleCallback($trigger, $callback, $name);
         } else {
             Timer::delAll();
-            \cli_set_process_title(\str_replace(self::PROCESS_NAME, $name, \cli_get_process_title()));
+            $title = \str_replace(sprintf('[%s]', self::PROCESS_TITLE), sprintf('[%s] "%s"', self::PROCESS_TITLE, $name), \cli_get_process_title());
+            \cli_set_process_title($title);
             $this->saveTaskPid($callback);
             try {
                 $callback();
