@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle;
 
-use Luzrain\WorkermanBundle\Worker\FileMonitorWorker;
-use Luzrain\WorkermanBundle\Worker\HttpServerWorker;
-use Luzrain\WorkermanBundle\Worker\SchedulerWorker;
-use Luzrain\WorkermanBundle\Worker\SupervisorWorker;
+use Luzrain\WorkermanBundle\Runner\FileMonitor;
+use Luzrain\WorkermanBundle\Runner\HttpServer;
+use Luzrain\WorkermanBundle\Runner\Scheduler;
+use Luzrain\WorkermanBundle\Runner\Supervisor;
 use Symfony\Component\Runtime\RunnerInterface;
 use Workerman\Connection\TcpConnection;
 use Workerman\Worker;
@@ -37,25 +37,22 @@ final class Runner implements RunnerInterface
         Worker::$stdoutFile = $config['stdout_file'];
         Worker::$stopTimeout = $config['stop_timeout'];
 
-        // Start http server
         if ($config['webserver']['processes'] > 0) {
-            new HttpServerWorker($this->kernelFactory, $config);
+            HttpServer::run($this->kernelFactory, $config);
         }
 
-        // Start scheduler worker
         if (!empty($schedulerConfig)) {
-            new SchedulerWorker($this->kernelFactory, $config, $schedulerConfig);
+            Scheduler::run($this->kernelFactory, $config, $schedulerConfig);
         }
 
-        // Start File monitor worker
         //if ($kernel->isDebug() && !Worker::$daemonize) {
         if (true && !Worker::$daemonize) {
-            new FileMonitorWorker($config);
+            FileMonitor::run($config);
         }
 
-        // Start user process workers (Windows does not support custom processes)
+        // Windows does not support custom processes
         if (!empty($processConfig) && !Utils::isWindows()) {
-            new SupervisorWorker($this->kernelFactory, $config, $processConfig);
+            Supervisor::run($this->kernelFactory, $config, $processConfig);
         }
 
         Worker::runAll();

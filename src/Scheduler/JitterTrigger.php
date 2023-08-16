@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\SchedulerTrigger;
+namespace Luzrain\WorkermanBundle\Scheduler;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>

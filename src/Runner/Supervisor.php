@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Worker;
+namespace Luzrain\WorkermanBundle\Runner;
 
 use Luzrain\WorkermanBundle\KernelFactory;
 use Psr\Container\ContainerInterface;
 use Workerman\Worker;
 
-final class SupervisorWorker
+final class Supervisor
 {
     private const PROCESS_TITLE = 'Process';
 
-    public function __construct(private KernelFactory $kernelFactory, array $config, array $processConfig)
+    public static function run(KernelFactory $kernelFactory, array $config, array $processConfig)
     {
         foreach ($processConfig as $serviceId => $serviceConfig) {
             if ($serviceConfig['processes'] !== null && $serviceConfig['processes'] <= 0) {
@@ -24,10 +24,10 @@ final class SupervisorWorker
             $worker->user = $config['user'] ?? '';
             $worker->group = $config['group'] ?? '';
             $worker->count = $serviceConfig['processes'] ?? 1;
-            $worker->onWorkerStart = function(Worker $worker) use ($serviceId, $serviceConfig) {
+            $worker->onWorkerStart = function(Worker $worker) use ($kernelFactory, $serviceId, $serviceConfig) {
                 Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $serviceConfig['name'] ?? $serviceId));
 
-                $kernel = $this->kernelFactory->createKernel();
+                $kernel = $kernelFactory->createKernel();
                 $kernel->boot();
 
                 /** @var ContainerInterface $locator */

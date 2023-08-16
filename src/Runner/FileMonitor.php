@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Worker;
+namespace Luzrain\WorkermanBundle\Runner;
 
 use Luzrain\WorkermanBundle\FileMonitor\InotifyMonitor;
 use Workerman\Worker;
 
-final class FileMonitorWorker
+final class FileMonitor
 {
     private const PROCESS_TITLE = 'FileMonitor';
 
-    public function __construct(array $config)
+    public static function run(array $config)
     {
         $worker = new Worker();
         $worker->name = sprintf('[%s]', self::PROCESS_TITLE);

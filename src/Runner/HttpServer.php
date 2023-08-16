@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Worker;
+namespace Luzrain\WorkermanBundle\Runner;
 
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\RequestHandler;
 use Workerman\Worker;
 
-final class HttpServerWorker
+final class HttpServer
 {
     private const PROCESS_TITLE = 'WebServer';
 
-    public function __construct(private KernelFactory $kernelFactory, array $config)
+    public static function run(KernelFactory $kernelFactory, array $config)
     {
         if (str_starts_with($config['webserver']['listen'], 'https://')) {
             $listen = str_replace('https://', 'http://', $config['webserver']['listen']);
@@ -35,9 +35,9 @@ final class HttpServerWorker
         $worker->group = $config['group'] ?? '';
         $worker->count = $config['webserver']['processes'];
         $worker->transport = $transport;
-        $worker->onWorkerStart = function(Worker $worker) use ($config) {
+        $worker->onWorkerStart = function(Worker $worker) use ($kernelFactory, $config) {
             Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['webserver']['name']));
-            $kernel = $this->kernelFactory->createKernel();
+            $kernel = $kernelFactory->createKernel();
             $kernel->boot();
             $worker->onMessage = (new RequestHandler($kernel))(...);
         };
