@@ -37,7 +37,7 @@ final class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('local_cert')->defaultNull()->end()
                         ->scalarNode('local_pk')->defaultNull()->end()
-                        ->integerNode('processes')->defaultValue(Utils::cpuCount() * 2)->end()
+                        ->integerNode('processes')->defaultNull()->end()
                     ->end()
                 ->end()
             ->end();

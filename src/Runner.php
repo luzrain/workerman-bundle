@@ -37,7 +37,8 @@ final class Runner implements RunnerInterface
         Worker::$stdoutFile = $config['stdout_file'];
         Worker::$stopTimeout = $config['stop_timeout'];
 
-        if ($config['webserver']['processes'] > 0) {
+        if ($config['webserver']['processes'] === null || $config['webserver']['processes'] > 0) {
+            $config['webserver']['processes'] ??= Utils::cpuCount() * 2;
             HttpServer::run($this->kernelFactory, $config);
         }
 
