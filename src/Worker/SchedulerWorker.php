@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\SchedulerTrigger\DateTimeTrigger;
-use Luzrain\WorkermanBundle\SchedulerTrigger\PeriodicalTrigger;
+use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\SchedulerTrigger\TriggerFactory;
 use Luzrain\WorkermanBundle\SchedulerTrigger\TriggerInterface;
 use Psr\Container\ContainerInterface;
@@ -16,19 +15,35 @@ final class SchedulerWorker
 {
     private const PROCESS_NAME = 'Scheduler';
 
-    public function __construct(ContainerInterface $container, array $config, array $cronJobConfig)
+    public function __construct(private KernelFactory $kernelFactory, array $config, array $cronJobConfig)
     {
         $worker = new Worker();
-        $worker->name = self::PROCESS_NAME;
+        $worker->name = sprintf('[%s]', self::PROCESS_NAME);
         $worker->user = $config['user'] ?? '';
         $worker->group = $config['group'] ?? '';
         $worker->count = 1;
-        $worker->onWorkerStart = function(Worker $worker) use ($container, $cronJobConfig) {
+
+        $worker->onWorkerStart = function(Worker $worker) use ($cronJobConfig) {
+            Worker::log(sprintf('[%s] Start', self::PROCESS_NAME));
+
             \pcntl_signal(\SIGCHLD, \SIG_IGN);
+
+            $kernel = $this->kernelFactory->createKernel();
+            $kernel->boot();
+
+            /** @var ContainerInterface $locator */
+            $locator = $kernel->getContainer()->get('workerman.scheduledjob_locator');
+
             foreach ($cronJobConfig as $serviceId => $serviceConfig) {
-                $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
-                echo sprintf('[%s] Task "%s" scheduled: %s', self::PROCESS_NAME, $serviceConfig['name'], $trigger) . "\n";
-                $service = $container->get($serviceId);
+                try {
+                    $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
+                } catch (\InvalidArgumentException) {
+                    Worker::log(sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_NAME, $serviceConfig['name'], $serviceConfig['schedule']));
+                    continue;
+                }
+
+                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger "%s"', self::PROCESS_NAME, $serviceConfig['name'], $trigger));
+                $service = $locator->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
                 $this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
             }
@@ -54,9 +69,9 @@ final class SchedulerWorker
 
         $pid = \pcntl_fork();
         if ($pid === -1) {
-            echo(\sprintf('[%s] Task "%s" start error!', self::PROCESS_NAME, $name)) . "\n";
+            Worker::log(sprintf('[%s] Task "%s" start error!', self::PROCESS_NAME, $name));
         } else if ($pid > 0) {
-            echo(\sprintf('[%s] Task "%s" started', self::PROCESS_NAME, $name)) . "\n";
+            Worker::log(sprintf('[%s] Task "%s" started', self::PROCESS_NAME, $name));
             $this->scheduleCallback($trigger, $callback, $name);
         } else {
             Timer::delAll();

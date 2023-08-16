@@ -35,7 +35,7 @@ final class RequestHandler
         Http::requestClass(ServerRequest::class);
     }
 
-    public function onMessage(TcpConnection $connection, ServerRequest $psrRequest): void
+    public function __invoke(TcpConnection $connection, ServerRequest $psrRequest): void
     {
         $checkFile = "{$this->kernel->getProjectDir()}/public{$psrRequest->getUri()->getPath()}";
         $checkFile = str_replace('..', '/', $checkFile);

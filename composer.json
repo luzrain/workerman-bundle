@@ -25,6 +25,10 @@
         "workerman/psr7": "^1.4",
         "workerman/workerman": "^4.1"
     },
+    "suggest": {
+        "ext-inotify": "For effective file monitoring",
+        "dragonmantank/cron-expression": "For parse cron expressions"
+    },
     "autoload": {
         "psr-4": {
             "Luzrain\\WorkermanBundle\\": "src/"
