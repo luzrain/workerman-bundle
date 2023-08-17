@@ -20,14 +20,25 @@ final class Runner implements RunnerInterface
 
     public function run(): int
     {
+        // Warm up cache if no cache directory found
+        // Do it in a forked process as the main process should not boot kernel
+        if (!is_dir($this->kernelFactory->getCacheDir())) {
+            if (\pcntl_fork() === 0) {
+                $this->kernelFactory->createKernel()->boot();
+                exit;
+            } else {
+                pcntl_wait($status);
+                unset($status);
+            }
+        }
+
         $configLoader = new ConfigLoader($this->kernelFactory->getCacheDir(), $this->kernelFactory->isDebug());
         $config = $configLoader->getWorkermanConfig();
         $schedulerConfig = $configLoader->getSchedulerConfig();
         $processConfig = $configLoader->getProcessConfig();
 
-        $varRunDir = dirname($config['pid_file']);
-        if (!is_dir($varRunDir)) {
-            mkdir($varRunDir);
+        if (!is_dir($varRunDir = dirname($config['pid_file']))) {
+            mkdir(directory: $varRunDir, recursive: true);
         }
 
         TcpConnection::$defaultMaxPackageSize = $config['max_package_size'];
