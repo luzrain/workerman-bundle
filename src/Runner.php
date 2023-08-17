@@ -20,8 +20,7 @@ final class Runner implements RunnerInterface
 
     public function run(): int
     {
-        //$configLoader = new ConfigLoader($kernel->getCacheDir(), $kernel->isDebug());
-        $configLoader = new ConfigLoader('/app/var/cache/dev', true);
+        $configLoader = new ConfigLoader($this->kernelFactory->getCacheDir(), $this->kernelFactory->isDebug());
         $config = $configLoader->getWorkermanConfig();
         $schedulerConfig = $configLoader->getSchedulerConfig();
         $processConfig = $configLoader->getProcessConfig();
@@ -46,8 +45,7 @@ final class Runner implements RunnerInterface
             Scheduler::run($this->kernelFactory, $config, $schedulerConfig);
         }
 
-        //if ($kernel->isDebug() && !Worker::$daemonize) {
-        if (true && !Worker::$daemonize) {
+        if ($this->kernelFactory->isDebug() && !Worker::$daemonize) {
             FileMonitor::run($config);
         }
 

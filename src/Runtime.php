@@ -12,17 +12,15 @@ final class Runtime extends SymfonyRuntime
 {
     public function getRunner(object|null $application): RunnerInterface
     {
-        if ($application instanceof KernelFactory) {
-            return new Runner($application);
-        }
+        assert($application instanceof KernelFactory);
 
-        return parent::getRunner($application);
+        return new Runner($application);
     }
 
     public function getResolver(callable $callable, \ReflectionFunction|null $reflector = null): ResolverInterface
     {
-        $resolver = parent::getResolver($callable, $reflector);
+        $context = $_SERVER + $_ENV;
 
-        return new Resolver($resolver);
+        return new Resolver($callable, $context, $this->options);
     }
 }
