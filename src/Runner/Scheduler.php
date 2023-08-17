@@ -94,7 +94,7 @@ final class Scheduler
     private static function readTaskPid(\Closure $callback): int
     {
         try {
-            return (int) \file_get_contents(self::getTaskPidPath($callback));
+            return (int) @\file_get_contents(self::getTaskPidPath($callback));
         } catch (\ErrorException) {
             return 0;
         }

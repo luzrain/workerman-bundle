@@ -19,14 +19,14 @@ final class PeriodicalTrigger implements TriggerInterface
                 $this->interval = new \DateInterval($interval);
                 $this->description = sprintf('DateInterval (%s)', $interval);
             } else if (\is_string($interval)) {
-                $this->interval = \DateInterval::createFromDateString($interval);
+                $this->interval = @\DateInterval::createFromDateString($interval);
                 $this->description = sprintf('every %s', $interval);
             } else {
                 $this->interval = $interval;
                 $a = (array) $interval;
                 $this->description = isset($a['from_string']) ? sprintf('every %s', $a['date_string']) : 'DateInterval';
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new \InvalidArgumentException(sprintf('Invalid interval "%s": %s', $interval instanceof \DateInterval ? 'instance of \DateInterval' : $interval, $e->getMessage()), 0, $e);
         }
     }
