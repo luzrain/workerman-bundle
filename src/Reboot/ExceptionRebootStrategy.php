@@ -24,21 +24,17 @@ final class ExceptionRebootStrategy implements RebootStrategyInterface
             return;
         }
 
+        foreach ($this->allowedExceptions as $allowedExceptionClass) {
+            if ($event->getThrowable() instanceof $allowedExceptionClass) {
+                return;
+            }
+        }
+
         $this->exception = $event->getThrowable();
     }
 
     public function shouldReboot(): bool
     {
-        if ($this->exception === null) {
-            return false;
-        }
-
-        foreach ($this->allowedExceptions as $allowedExceptionClass) {
-            if ($this->exception instanceof $allowedExceptionClass) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this->exception !== null;
     }
 }
