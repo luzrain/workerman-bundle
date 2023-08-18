@@ -1,6 +1,6 @@
 {
     "name": "luzrain/workerman-bundle",
-    "description": "Run symfony application with workerman runtime",
+    "description": "A Workerman server as a Symfony Bundle",
     "keywords": ["workerman", "symfony", "runtime", "php-runtime"],
     "homepage": "https://github.com/luzrain/workerman-bundle",
     "type": "library",

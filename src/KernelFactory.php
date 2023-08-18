@@ -12,16 +12,16 @@ final class KernelFactory
     private string $environment;
     private bool $isDebug;
 
-    public function __construct(private \Closure $app, private array $context, array $options)
+    public function __construct(private \Closure $app, private array $args, array $options)
     {
         $this->projectDir = $options['project_dir'];
-        $this->environment = $context[$options['env_var_name']];
-        $this->isDebug = (bool) $context[$options['debug_var_name']];
+        $this->environment = $_SERVER[$options['env_var_name']];
+        $this->isDebug = (bool) $_SERVER[$options['debug_var_name']];
     }
 
     public function createKernel(): KernelInterface
     {
-        return ($this->app)($this->context);
+        return ($this->app)(...$this->args);
     }
 
     public function getEnvironment(): string
