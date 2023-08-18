@@ -6,8 +6,14 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
+use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
+use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
+use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
+use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
+use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Luzrain\WorkermanBundle\ConfigLoader;
 
@@ -25,6 +31,34 @@ final class WorkermanExtension extends Extension
             ->addMethodCall('setWorkermanConfig', [$config])
             ->addTag('kernel.cache_warmer')
         ;
+
+//        $container
+//            ->register('workerman.always_reboot_strategy', AlwaysRebootStrategy::class)
+//            ->addTag('workerman.reboot_strategy')
+//        ;
+
+//        $container
+//            ->register('workerman.max_jobs_reboot_strategy', MaxJobsRebootStrategy::class)
+//            ->addTag('workerman.reboot_strategy')
+//            ->setArguments([10, 0.7])
+//        ;
+
+
+//        $allowedExceptions = [
+//            'Symfony\Component\HttpKernel\Exception\HttpExceptionInterface',
+//            'Symfony\Component\Serializer\Exception\ExceptionInterface',
+//        ];
+//
+//        $container
+//            ->register('workerman.exception_reboot_strategy', ExceptionRebootStrategy::class)
+//            ->setArguments([$allowedExceptions])
+//            ->addTag('workerman.reboot_strategy')
+//            ->addTag('kernel.event_listener', [
+//                'event' => 'kernel.exception',
+//                'priority' => -100,
+//                'method' => 'onException',
+//            ])
+//        ;
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
         $container->registerAttributeForAutoconfiguration(AsScheduledJob::class, $this->scheduledJobConfig(...));

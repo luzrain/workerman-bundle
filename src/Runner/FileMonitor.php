@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Runner;
 
-use Luzrain\WorkermanBundle\FileMonitor\InotifyMonitor;
+use Luzrain\WorkermanBundle\KernelFactory;
+use Luzrain\WorkermanBundle\Reboot\InotifyMonitor;
 use Workerman\Worker;
 
 final class FileMonitor

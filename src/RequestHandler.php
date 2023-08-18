@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle;
 
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
+use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
@@ -60,6 +61,10 @@ final class RequestHandler
 
         if ($this->kernel instanceof TerminableInterface) {
             $this->kernel->terminate($symfonyRequest, $symfonyResponse);
+        }
+
+        if ($this->kernel->getContainer()->get(RebootStrategyInterface::class)->shouldReboot()) {
+            Utils::reboot();
         }
     }
 }

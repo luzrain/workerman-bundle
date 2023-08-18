@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\FileMonitor;
+namespace Luzrain\WorkermanBundle\Reboot;
 
 use Workerman\Events\EventInterface;
 use Workerman\Timer;

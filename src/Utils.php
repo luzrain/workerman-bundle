@@ -27,4 +27,23 @@ final class Utils
     {
         return \DIRECTORY_SEPARATOR !== '/';
     }
+
+    public static function reboot(bool $rebootAll = false, bool $clearOpcache = false): void
+    {
+        if ($clearOpcache && function_exists('opcache_get_status')) {
+            if ($status = \opcache_get_status()) {
+                if (isset($status['scripts']) && $scripts = $status['scripts']) {
+                    foreach (array_keys($scripts) as $file) {
+                        \opcache_invalidate($file, true);
+                    }
+                }
+            }
+        }
+
+        if ($rebootAll) {
+            posix_kill(posix_getppid(), SIGUSR1);
+        } else {
+            posix_kill(posix_getpid(), SIGUSR1);
+        }
+    }
 }
