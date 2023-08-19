@@ -56,7 +56,7 @@ final class Runner implements RunnerInterface
             Scheduler::run($this->kernelFactory, $config, $schedulerConfig);
         }
 
-        if ($this->kernelFactory->isDebug() && !Worker::$daemonize) {
+        if (in_array('file_monitor', $config['webserver']['relod_strategy']) && $this->kernelFactory->isDebug()) {
             FileMonitor::run($config);
         }
 

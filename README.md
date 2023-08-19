@@ -24,26 +24,21 @@ return [
 ```
 
 ### Configure bundle
+A minimal configuration might look like this.  
+For all available options, see the command output.
+```bash
+$ console config:dump-reference workerman
+```
+
 ```yaml
 # config/packages/workerman.yaml
 
 workerman:
-  # Unix user of processes. Default: current user
-  #user: app
-  # Unix group of processes. Default: current group
-  #group: app
-
-  # Webserver configuration
   webserver:
     name: 'Symfony Workerman Server'
-    # Listening address (can be http or https)
     listen: http://0.0.0.0:80
-    # Path to local certificate file on filesystem. Necessary if listen address is https
-    #local_cert: '%kernel.project_dir%/crt/localhost.crt'
-    # Path to local private key file on filesystem. Necessary if listen address is https
-    #local_pk: '%kernel.project_dir%/crt/localhost.key'
-    # Number of worker processes. Default: number of cpu cores*2
-    processes: 1
+    processes: 8
+    relod_strategy: [exception, file_monitor]
 ```
 
 ### Start application

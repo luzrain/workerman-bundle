@@ -32,33 +32,36 @@ final class WorkermanExtension extends Extension
             ->addTag('kernel.cache_warmer')
         ;
 
-//        $container
-//            ->register('workerman.always_reboot_strategy', AlwaysRebootStrategy::class)
-//            ->addTag('workerman.reboot_strategy')
-//        ;
+        if (in_array('always', $config['webserver']['relod_strategy'], true)) {
+            $container
+                ->register('workerman.always_reboot_strategy', AlwaysRebootStrategy::class)
+                ->addTag('workerman.reboot_strategy')
+            ;
+        }
 
-//        $container
-//            ->register('workerman.max_jobs_reboot_strategy', MaxJobsRebootStrategy::class)
-//            ->addTag('workerman.reboot_strategy')
-//            ->setArguments([10, 0.7])
-//        ;
+        if (in_array('max_requests', $config['webserver']['relod_strategy'], true)) {
+            $container
+                ->register('workerman.max_requests_reboot_strategy', MaxJobsRebootStrategy::class)
+                ->addTag('workerman.reboot_strategy')
+                ->setArguments([
+                    $config['relod_strategy']['max_requests']['requests'],
+                    $config['relod_strategy']['max_requests']['dispersion'],
+                ])
+            ;
+        }
 
-
-//        $allowedExceptions = [
-//            'Symfony\Component\HttpKernel\Exception\HttpExceptionInterface',
-//            'Symfony\Component\Serializer\Exception\ExceptionInterface',
-//        ];
-//
-//        $container
-//            ->register('workerman.exception_reboot_strategy', ExceptionRebootStrategy::class)
-//            ->setArguments([$allowedExceptions])
-//            ->addTag('workerman.reboot_strategy')
-//            ->addTag('kernel.event_listener', [
-//                'event' => 'kernel.exception',
-//                'priority' => -100,
-//                'method' => 'onException',
-//            ])
-//        ;
+        if (in_array('exception', $config['webserver']['relod_strategy'], true)) {
+            $container
+                ->register('workerman.exception_reboot_strategy', ExceptionRebootStrategy::class)
+                ->setArguments([$config['relod_strategy']['exception']['allowed_exceptions']])
+                ->addTag('workerman.reboot_strategy')
+                ->addTag('kernel.event_listener', [
+                    'event' => 'kernel.exception',
+                    'priority' => -100,
+                    'method' => 'onException',
+                ])
+            ;
+        }
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
         $container->registerAttributeForAutoconfiguration(AsScheduledJob::class, $this->scheduledJobConfig(...));

@@ -20,6 +20,12 @@ final class CompilerPass implements CompilerPassInterface
         $rebootStrategies = array_map(fn (array $a) => $a[0], $container->findTaggedServiceIds('workerman.reboot_strategy'));
 
         $container
+            ->getDefinition('workerman.config_loader')
+            ->addMethodCall('setProcessConfig', [$processes])
+            ->addMethodCall('setSchedulerConfig', [$jobs])
+        ;
+
+        $container
             ->register('workerman.process_locator', ServiceLocator::class)
             ->setArguments([$this->referenceMap($processes)])
             ->addTag('container.service_locator')
@@ -31,12 +37,6 @@ final class CompilerPass implements CompilerPassInterface
             ->setArguments([$this->referenceMap($jobs)])
             ->addTag('container.service_locator')
             ->setPublic(true)
-        ;
-
-        $container
-            ->getDefinition('workerman.config_loader')
-            ->addMethodCall('setProcessConfig', [$processes])
-            ->addMethodCall('setSchedulerConfig', [$jobs])
         ;
 
         $container
