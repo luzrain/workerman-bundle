@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Runner;
+namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\Scheduler\TriggerFactory;
@@ -11,7 +11,7 @@ use Psr\Container\ContainerInterface;
 use Workerman\Timer;
 use Workerman\Worker;
 
-final class Scheduler
+final class SchedulerWorker
 {
     private const PROCESS_TITLE = 'Scheduler';
 

@@ -19,14 +19,6 @@ abstract class FileMonitorWatcher
         $this->logger = $logger;
     }
 
-    final public static function create(array $sourceDir, array $filePattern, \Closure $logger): self
-    {
-        return \extension_loaded('inotify')
-            ? new InotifyMonitorWatcher($sourceDir, $filePattern, $logger)
-            : new PollingMonitorWatcher($sourceDir, $filePattern, $logger)
-        ;
-    }
-
     abstract public function start(): void;
 
     final protected function getSourceDir(): array

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle;
 
-use Luzrain\WorkermanBundle\Runner\FileMonitor;
-use Luzrain\WorkermanBundle\Runner\HttpServer;
-use Luzrain\WorkermanBundle\Runner\Scheduler;
-use Luzrain\WorkermanBundle\Runner\Supervisor;
+use Luzrain\WorkermanBundle\Worker\FileMonitorWorker;
+use Luzrain\WorkermanBundle\Worker\HttpServerWorker;
+use Luzrain\WorkermanBundle\Worker\SchedulerWorker;
+use Luzrain\WorkermanBundle\Worker\SupervisorWorker;
 use Symfony\Component\Runtime\RunnerInterface;
 use Workerman\Connection\TcpConnection;
 use Workerman\Worker;
@@ -49,15 +49,15 @@ final class Runner implements RunnerInterface
 
         if ($config['webserver']['processes'] === null || $config['webserver']['processes'] > 0) {
             $config['webserver']['processes'] ??= Utils::cpuCount() * 2;
-            HttpServer::run($this->kernelFactory, $config);
+            HttpServerWorker::run($this->kernelFactory, $config);
         }
 
         if (!empty($schedulerConfig)) {
-            Scheduler::run($this->kernelFactory, $config, $schedulerConfig);
+            SchedulerWorker::run($this->kernelFactory, $config, $schedulerConfig);
         }
 
         if (in_array('file_monitor', $config['webserver']['relod_strategy']) && $this->kernelFactory->isDebug()) {
-            FileMonitor::run(
+            FileMonitorWorker::run(
                 sourceDir: $config['relod_strategy']['file_monitor']['source_dir'],
                 filePattern: $config['relod_strategy']['file_monitor']['file_pattern'],
             );
@@ -65,7 +65,7 @@ final class Runner implements RunnerInterface
 
         // Windows does not support custom processes
         if (!empty($processConfig) && !Utils::isWindows()) {
-            Supervisor::run($this->kernelFactory, $config, $processConfig);
+            SupervisorWorker::run($this->kernelFactory, $config, $processConfig);
         }
 
         Worker::runAll();

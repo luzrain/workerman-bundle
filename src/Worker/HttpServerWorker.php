@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Runner;
+namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\RequestHandler;
 use Workerman\Worker;
 
-final class HttpServer
+final class HttpServerWorker
 {
     private const PROCESS_TITLE = 'WebServer';
 

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Runner;
+namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
 use Psr\Container\ContainerInterface;
 use Workerman\Worker;
 
-final class Supervisor
+final class SupervisorWorker
 {
     private const PROCESS_TITLE = 'Process';
 

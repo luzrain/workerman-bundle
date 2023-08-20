@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Runner;
+namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
+use Luzrain\WorkermanBundle\Reboot\FileMonitorWatcherFactory;
 use Workerman\Worker;
 
-final class FileMonitor
+final class FileMonitorWorker
 {
     public const PROCESS_TITLE = 'FileMonitor';
 
@@ -21,7 +21,7 @@ final class FileMonitor
         $worker->reloadable = false;
         $worker->onWorkerStart = function (Worker $worker) use ($sourceDir, $filePattern) {
             self::log('started');
-            $fileMonitor = FileMonitorWatcher::create($sourceDir, $filePattern, self::log(...));
+            $fileMonitor = FileMonitorWatcherFactory::create($sourceDir, $filePattern, self::log(...));
             $fileMonitor->start();
         };
     }
