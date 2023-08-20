@@ -49,23 +49,22 @@ final class Runner implements RunnerInterface
 
         if ($config['webserver']['processes'] === null || $config['webserver']['processes'] > 0) {
             $config['webserver']['processes'] ??= Utils::cpuCount() * 2;
-            HttpServerWorker::run($this->kernelFactory, $config);
+            new HttpServerWorker($this->kernelFactory, $config);
         }
 
         if (!empty($schedulerConfig)) {
-            SchedulerWorker::run($this->kernelFactory, $config, $schedulerConfig);
+            new SchedulerWorker($this->kernelFactory, $config, $schedulerConfig);
         }
 
         if (in_array('file_monitor', $config['webserver']['relod_strategy']) && $this->kernelFactory->isDebug()) {
-            FileMonitorWorker::run(
+            new FileMonitorWorker(
                 sourceDir: $config['relod_strategy']['file_monitor']['source_dir'],
                 filePattern: $config['relod_strategy']['file_monitor']['file_pattern'],
             );
         }
 
-        // Windows does not support custom processes
-        if (!empty($processConfig) && !Utils::isWindows()) {
-            SupervisorWorker::run($this->kernelFactory, $config, $processConfig);
+        if (!empty($processConfig)) {
+            new SupervisorWorker($this->kernelFactory, $config, $processConfig);
         }
 
         Worker::runAll();

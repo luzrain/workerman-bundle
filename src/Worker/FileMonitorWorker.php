@@ -11,7 +11,7 @@ final class FileMonitorWorker
 {
     public const PROCESS_TITLE = 'FileMonitor';
 
-    public static function run(array $sourceDir, array $filePattern)
+    public function __construct(array $sourceDir, array $filePattern)
     {
         $worker = new Worker();
         $worker->name = sprintf('[%s]', self::PROCESS_TITLE);
@@ -20,13 +20,13 @@ final class FileMonitorWorker
         $worker->count = 1;
         $worker->reloadable = false;
         $worker->onWorkerStart = function (Worker $worker) use ($sourceDir, $filePattern) {
-            self::log('started');
-            $fileMonitor = FileMonitorWatcherFactory::create($sourceDir, $filePattern, self::log(...));
+            $this->log('started');
+            $fileMonitor = FileMonitorWatcherFactory::create($sourceDir, $filePattern, $this->log(...));
             $fileMonitor->start();
         };
     }
 
-    private static function log(string $message): void
+    private function log(string $message): void
     {
         Worker::log(sprintf('[%s] %s', self::PROCESS_TITLE, $message));
     }

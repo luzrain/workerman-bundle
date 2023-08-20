@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
-use Psr\Container\ContainerInterface;
 use Workerman\Worker;
 
 final class SupervisorWorker
 {
     private const PROCESS_TITLE = 'Process';
 
-    public static function run(KernelFactory $kernelFactory, array $config, array $processConfig)
+    public function __construct(KernelFactory $kernelFactory, array $config, array $processConfig)
     {
         foreach ($processConfig as $serviceId => $serviceConfig) {
             if ($serviceConfig['processes'] !== null && $serviceConfig['processes'] <= 0) {
@@ -30,10 +29,7 @@ final class SupervisorWorker
                 $kernel = $kernelFactory->createKernel();
                 $kernel->boot();
 
-                /** @var ContainerInterface $locator */
-                $locator = $kernel->getContainer()->get('workerman.process_locator');
-
-                $service = $locator->get($serviceId);
+                $service = $kernel->getContainer()->get('workerman.process_locator')->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
                 $service->$method();
             };

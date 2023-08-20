@@ -10,9 +10,9 @@ use Workerman\Worker;
 
 final class HttpServerWorker
 {
-    private const PROCESS_TITLE = 'WebServer';
+    protected const PROCESS_TITLE = 'WebServer';
 
-    public static function run(KernelFactory $kernelFactory, array $config)
+    public function __construct(KernelFactory $kernelFactory, array $config)
     {
         if (str_starts_with($config['webserver']['listen'], 'https://')) {
             $listen = str_replace('https://', 'http://', $config['webserver']['listen']);

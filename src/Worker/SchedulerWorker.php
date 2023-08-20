@@ -15,14 +15,14 @@ final class SchedulerWorker
 {
     private const PROCESS_TITLE = 'Scheduler';
 
-    public static function run(KernelFactory $kernelFactory, array $config, array $cronJobConfig)
+    public function __construct(KernelFactory $kernelFactory, array $config, array $cronJobConfig)
     {
         $worker = new Worker();
         $worker->name = sprintf('[%s]', self::PROCESS_TITLE);
         $worker->user = $config['user'] ?? '';
         $worker->group = $config['group'] ?? '';
         $worker->count = 1;
-
+        $worker->reloadable = false;
         $worker->onWorkerStart = function(Worker $worker) use ($kernelFactory, $cronJobConfig) {
             Worker::log(sprintf('[%s] started', self::PROCESS_TITLE));
 
@@ -44,25 +44,25 @@ final class SchedulerWorker
                 Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $serviceConfig['name'], $trigger));
                 $service = $locator->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
-                self::scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
+                $this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
             }
         };
     }
 
-    private static function scheduleCallback(TriggerInterface $trigger, \Closure $callback, string $name): void
+    private function scheduleCallback(TriggerInterface $trigger, \Closure $callback, string $name): void
     {
         $currentDate = new \DateTimeImmutable();
         $nextRunDate = $trigger->getNextRunDate($currentDate);
         if ($nextRunDate !== null) {
             $interval = $nextRunDate->getTimestamp() - $currentDate->getTimestamp();
-            Timer::add($interval, self::runCallback(...), [$trigger, $callback, $name], false);
+            Timer::add($interval, $this->runCallback(...), [$trigger, $callback, $name], false);
         }
     }
 
-    private static function runCallback(TriggerInterface $trigger, \Closure $callback, string $name): void
+    private function runCallback(TriggerInterface $trigger, \Closure $callback, string $name): void
     {
-        if (self::readTaskPid($callback) !== 0) {
-            self::scheduleCallback($trigger, $callback, $name);
+        if ($this->readTaskPid($callback) !== 0) {
+            $this->scheduleCallback($trigger, $callback, $name);
             return;
         }
 
@@ -71,44 +71,45 @@ final class SchedulerWorker
             Worker::log(sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $name));
         } else if ($pid > 0) {
             Worker::log(sprintf('[%s] Task "%s" called', self::PROCESS_TITLE, $name));
-            self::scheduleCallback($trigger, $callback, $name);
+            $this->scheduleCallback($trigger, $callback, $name);
         } else {
+            // Child process start
             Timer::delAll();
             $title = \str_replace(sprintf('[%s]', self::PROCESS_TITLE), sprintf('[%s] "%s"', self::PROCESS_TITLE, $name), \cli_get_process_title());
             \cli_set_process_title($title);
-            self::saveTaskPid($callback);
+            $this->saveTaskPid($callback);
             try {
                 $callback();
             } finally {
-                self::deleteTaskPid($callback);
+                $this->deleteTaskPid($callback);
                 \posix_kill(\posix_getpid(), \SIGUSR1);
             }
         }
     }
 
-    private static function getTaskPidPath(\Closure $callback): string
+    private function getTaskPidPath(\Closure $callback): string
     {
         return \sprintf('%s/workerman.task.%s.pid', \dirname(Worker::$pidFile), \spl_object_id($callback));
     }
 
-    private static function readTaskPid(\Closure $callback): int
+    private function readTaskPid(\Closure $callback): int
     {
         try {
-            return (int) @\file_get_contents(self::getTaskPidPath($callback));
+            return (int) @\file_get_contents($this->getTaskPidPath($callback));
         } catch (\ErrorException) {
             return 0;
         }
     }
 
-    private static function saveTaskPid(\Closure $callback): void
+    private function saveTaskPid(\Closure $callback): void
     {
-        if (\file_put_contents(self::getTaskPidPath($callback), posix_getpid()) === false) {
-            throw new \Exception(sprintf('Can\'t save pid to %s', self::getTaskPidPath($callback)));
+        if (\file_put_contents($this->getTaskPidPath($callback), posix_getpid()) === false) {
+            throw new \Exception(sprintf('Can\'t save pid to %s', $this->getTaskPidPath($callback)));
         }
     }
 
-    private static function deleteTaskPid(\Closure $callback): void
+    private function deleteTaskPid(\Closure $callback): void
     {
-        @\unlink(self::getTaskPidPath($callback));
+        @\unlink($this->getTaskPidPath($callback));
     }
 }
