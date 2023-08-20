@@ -9,11 +9,8 @@ use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
-use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
-use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Luzrain\WorkermanBundle\ConfigLoader;
 
@@ -26,12 +23,14 @@ final class WorkermanExtension extends Extension
 
         $container
             ->register('workerman.config_loader', ConfigLoader::class)
-            ->setArgument('$cacheDir', $container->getParameter('kernel.cache_dir'))
-            ->setArgument('$isDebug', $container->getParameter('kernel.debug'))
+            ->setArguments([
+                $container->getParameter('kernel.project_dir'),
+                $container->getParameter('kernel.cache_dir'),
+                $container->getParameter('kernel.debug'),
+            ])
             ->addMethodCall('setWorkermanConfig', [$config])
             ->addTag('kernel.cache_warmer')
         ;
-
         if (in_array('always', $config['webserver']['relod_strategy'], true)) {
             $container
                 ->register('workerman.always_reboot_strategy', AlwaysRebootStrategy::class)
