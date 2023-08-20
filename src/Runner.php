@@ -57,7 +57,10 @@ final class Runner implements RunnerInterface
         }
 
         if (in_array('file_monitor', $config['webserver']['relod_strategy']) && $this->kernelFactory->isDebug()) {
-            FileMonitor::run($config);
+            FileMonitor::run(
+                sourceDir: $config['relod_strategy']['file_monitor']['source_dir'],
+                filePattern: $config['relod_strategy']['file_monitor']['file_pattern'],
+            );
         }
 
         // Windows does not support custom processes

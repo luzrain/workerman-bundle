@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Runner;
 
-use Luzrain\WorkermanBundle\KernelFactory;
-use Luzrain\WorkermanBundle\Reboot\InotifyMonitor;
+use Luzrain\WorkermanBundle\Reboot\FileMonitor as FileMonitorWatcher;
 use Workerman\Worker;
 
 final class FileMonitor
 {
-    private const PROCESS_TITLE = 'FileMonitor';
+    public const PROCESS_TITLE = 'FileMonitor';
 
-    public static function run(array $config)
+    public static function run(array $sourceDir, array $filePattern)
     {
         $worker = new Worker();
         $worker->name = sprintf('[%s]', self::PROCESS_TITLE);
@@ -20,9 +19,15 @@ final class FileMonitor
         $worker->group = $config['group'] ?? '';
         $worker->count = 1;
         $worker->reloadable = false;
-        $worker->onWorkerStart = function (Worker $worker) {
-            Worker::log(sprintf('[%s] started', self::PROCESS_TITLE));
-            new InotifyMonitor();
+        $worker->onWorkerStart = function (Worker $worker) use ($sourceDir, $filePattern) {
+            self::log('started');
+            $fileMonitor = FileMonitorWatcher::create($sourceDir, $filePattern, self::log(...));
+            $fileMonitor->start();
         };
+    }
+
+    private static function log(string $message): void
+    {
+        Worker::log(sprintf('[%s] %s', self::PROCESS_TITLE, $message));
     }
 }
