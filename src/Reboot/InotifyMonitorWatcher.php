@@ -8,7 +8,7 @@ use Workerman\Events\EventInterface;
 use Workerman\Timer;
 use Workerman\Worker;
 
-final class InotifyMonitor extends FileMonitor
+final class InotifyMonitorWatcher extends FileMonitorWatcher
 {
     private const REBOOT_DELAY = 0.33;
     private mixed $fd;

@@ -6,7 +6,7 @@ namespace Luzrain\WorkermanBundle\Reboot;
 
 use Workerman\Timer;
 
-final class PollingMonitor extends FileMonitor
+final class PollingMonitorWatcher extends FileMonitorWatcher
 {
     private const POLLING_INTERVAL = 1;
     private const TO_MANY_FILES_WARNING_LIMIT = 1000;

@@ -6,7 +6,7 @@ namespace Luzrain\WorkermanBundle\Reboot;
 
 use Luzrain\WorkermanBundle\Utils;
 
-abstract class FileMonitor
+abstract class FileMonitorWatcher
 {
     private array $sourceDir;
     private array $filePattern;
@@ -22,8 +22,8 @@ abstract class FileMonitor
     final public static function create(array $sourceDir, array $filePattern, \Closure $logger): self
     {
         return \extension_loaded('inotify')
-            ? new InotifyMonitor($sourceDir, $filePattern, $logger)
-            : new PollingMonitor($sourceDir, $filePattern, $logger)
+            ? new InotifyMonitorWatcher($sourceDir, $filePattern, $logger)
+            : new PollingMonitorWatcher($sourceDir, $filePattern, $logger)
         ;
     }
 
