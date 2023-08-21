@@ -10,7 +10,7 @@ final class ScheduledJobTest extends KernelTestCase
     {
         $content = $this->getJobStatusFileContent() ?? $this->fail('Job status file is not found');
 
-        $this->assertTrue((int) $content > time() - 5, 'Job was called more than 5 seconds ago');
+        $this->assertTrue((int) $content > time() - 4, 'Job was called more than 4 seconds ago');
     }
 
     private function getJobStatusFileContent(): string|null

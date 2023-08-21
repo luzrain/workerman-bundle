@@ -50,6 +50,7 @@ final class Kernel extends BaseKernel
 
             $container->autowire(Controller::class)->setAutoconfigured(true);
             $container->autowire(ScheduledJob::class)->setAutoconfigured(true);
+            $container->autowire(Process::class)->setAutoconfigured(true);
         });
     }
 

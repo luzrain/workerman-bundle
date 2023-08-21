@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Test\App;
 
-use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsScheduledJob(name: 'Test job', schedule: '1 second')]
-final class ScheduledJob
+#[AsProcess(name: 'Test process')]
+final class Process
 {
     public function __construct(
-        #[Autowire(value: '%kernel.project_dir%/var/job_status.log')]
+        #[Autowire(value: '%kernel.project_dir%/var/process_status.log')]
         private string $statusFile,
     ) {
     }
