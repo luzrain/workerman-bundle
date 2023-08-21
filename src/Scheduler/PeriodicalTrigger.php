@@ -15,10 +15,10 @@ final class PeriodicalTrigger implements TriggerInterface
             if (is_int($interval)) {
                 $this->interval = \DateInterval::createFromDateString(sprintf('%d seconds', $interval));
                 $this->description = sprintf('every %s', $interval);
-            } else if (\is_string($interval) && str_starts_with($interval, 'P')) {
+            } elseif (\is_string($interval) && str_starts_with($interval, 'P')) {
                 $this->interval = new \DateInterval($interval);
                 $this->description = sprintf('DateInterval (%s)', $interval);
-            } else if (\is_string($interval)) {
+            } elseif (\is_string($interval)) {
                 $this->interval = @\DateInterval::createFromDateString($interval);
                 $this->description = sprintf('every %s', $interval);
             } else {

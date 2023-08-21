@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
-use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
+use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+use Luzrain\WorkermanBundle\ConfigLoader;
 use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use Luzrain\WorkermanBundle\ConfigLoader;
 
 final class WorkermanExtension extends Extension
 {

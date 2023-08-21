@@ -23,7 +23,7 @@ final class SupervisorWorker
             $worker->user = $config['user'] ?? '';
             $worker->group = $config['group'] ?? '';
             $worker->count = $serviceConfig['processes'] ?? 1;
-            $worker->onWorkerStart = function(Worker $worker) use ($kernelFactory, $serviceId, $serviceConfig) {
+            $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $serviceId, $serviceConfig) {
                 Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $serviceConfig['name'] ?? $serviceId));
 
                 $kernel = $kernelFactory->createKernel();

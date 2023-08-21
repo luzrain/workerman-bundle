@@ -21,7 +21,7 @@ final class HttpServerWorker
                 'ssl' => [
                     'local_cert' => $config['webserver']['local_cert'] ?? '',
                     'local_pk' => $config['webserver']['local_pk'] ?? '',
-                ]
+                ],
             ];
         } else {
             $listen = $config['webserver']['listen'];
@@ -35,7 +35,7 @@ final class HttpServerWorker
         $worker->group = $config['group'] ?? '';
         $worker->count = $config['webserver']['processes'];
         $worker->transport = $transport;
-        $worker->onWorkerStart = function(Worker $worker) use ($kernelFactory, $config) {
+        $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $config) {
             Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['webserver']['name']));
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();

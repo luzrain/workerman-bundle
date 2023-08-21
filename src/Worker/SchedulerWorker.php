@@ -23,7 +23,7 @@ final class SchedulerWorker
         $worker->group = $config['group'] ?? '';
         $worker->count = 1;
         $worker->reloadable = false;
-        $worker->onWorkerStart = function(Worker $worker) use ($kernelFactory, $cronJobConfig) {
+        $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $cronJobConfig) {
             Worker::log(sprintf('[%s] started', self::PROCESS_TITLE));
 
             \pcntl_signal(\SIGCHLD, \SIG_IGN);
@@ -69,7 +69,7 @@ final class SchedulerWorker
         $pid = \pcntl_fork();
         if ($pid === -1) {
             Worker::log(sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $name));
-        } else if ($pid > 0) {
+        } elseif ($pid > 0) {
             Worker::log(sprintf('[%s] Task "%s" called', self::PROCESS_TITLE, $name));
             $this->scheduleCallback($trigger, $callback, $name);
         } else {

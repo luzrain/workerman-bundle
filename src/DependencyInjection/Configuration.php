@@ -6,7 +6,6 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Luzrain\WorkermanBundle\Utils;
 
 final class Configuration implements ConfigurationInterface
 {
@@ -166,7 +165,7 @@ final class Configuration implements ConfigurationInterface
                     'Strategy %s is not available. Available strategies: %s',
                     implode(', ', $unsupportedStrategies),
                     implode(', ', $this->getAvailableReloadStrategies()),
-                )
+                ),
             );
         }
 

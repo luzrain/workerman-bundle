@@ -58,7 +58,7 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
                 continue;
             }
 
-            $this->rebootCallback = function() {
+            $this->rebootCallback = function () {
                 $this->rebootCallback = null;
                 $this->reboot();
             };
