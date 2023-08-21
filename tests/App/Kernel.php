@@ -39,6 +39,7 @@ final class Kernel extends BaseKernel
                 'webserver' => [
                     'listen' => 'http://127.0.0.1:8888',
                     'processes' => 1,
+                    'relod_strategy' => ['exception'],
                 ],
             ]);
 
