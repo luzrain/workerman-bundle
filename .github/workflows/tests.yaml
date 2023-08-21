@@ -9,11 +9,15 @@ jobs:
   run:
     name: Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        operating-system: ['ubuntu-latest', 'windows-latest', 'macos-latest']
+        php-versions: ['8.1', '8.2']
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php-versions }}
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,6 +30,9 @@ jobs:
 
       - name: Codestyle
         run: vendor/bin/php-cs-fixer fix -v --dry-run
+
+      - name: Start workerman server
+        run: APP_RUNTIME='Luzrain\WorkermanBundle\Runtime' php tests/App/index.php start -d
 
       - name: Tests
         run: vendor/bin/phpunit
