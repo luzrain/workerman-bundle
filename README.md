@@ -1,5 +1,5 @@
 # Workerman runtime for symfony applications
-[![PHP >=8.1](https://img.shields.io/badge/PHP->=8.1-777bb3.svg?style=flat)](https://www.php.net/releases/8.1/en.php)
+![PHP ^8.1](https://img.shields.io/badge/PHP-^8.1-777bb3.svg?style=flat)
 ![Symfony ^6.3](https://img.shields.io/badge/Symfony-^6.3-374151.svg?style=flat)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/luzrain/workerman-bundle/tests.yaml?branch=master)](../../actions/workflows/tests.yaml)
 
