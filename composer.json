@@ -25,6 +25,11 @@
         "workerman/psr7": "^1.4",
         "workerman/workerman": "^4.1"
     },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^7.7",
+        "phpunit/phpunit": "^10.3",
+        "symfony/framework-bundle": "^6.3"
+    },
     "suggest": {
         "ext-inotify": "For effective file monitoring",
         "dragonmantank/cron-expression": "For parse cron expressions"
@@ -32,6 +37,11 @@
     "autoload": {
         "psr-4": {
             "Luzrain\\WorkermanBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Luzrain\\WorkermanBundle\\Test\\": "tests"
         }
     },
     "config": {
