@@ -24,11 +24,11 @@ jobs:
       - name: Composer install
         run: composer install
 
-      - name: Test
-        run: APP_RUNTIME='Luzrain\WorkermanBundle\Runtime' php tests/App/index.php start -d
-
       - name: Codestyle
         run: vendor/bin/php-cs-fixer fix -v --dry-run
+
+      - name: Start workerman server
+        run: APP_RUNTIME=Luzrain\WorkermanBundle\Runtime php tests/App/index.php start -d
 
       - name: Tests
         run: vendor/bin/phpunit
