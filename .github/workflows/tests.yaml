@@ -9,11 +9,15 @@ jobs:
   run:
     name: Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        operating-system: ['ubuntu-latest']
+        php-versions: ['8.1', '8.2', '8.3']
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php-versions }}
 
       - name: Checkout
         uses: actions/checkout@v2
