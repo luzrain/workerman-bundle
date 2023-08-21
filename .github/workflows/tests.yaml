@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+jobs:
+  run:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create var dir
+        run: mkdir var
+
+      - name: Composer install
+        run: composer install
+
+      - name: Codestyle
+        run: vendor/bin/php-cs-fixer fix -v --dry-run
+
+      - name: Tests
+        run: vendor/bin/phpunit
