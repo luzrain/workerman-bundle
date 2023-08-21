@@ -60,7 +60,11 @@ final class Runner implements RunnerInterface
             new SchedulerWorker($this->kernelFactory, $config, $schedulerConfig);
         }
 
-        if (in_array('file_monitor', $config['webserver']['relod_strategy']) && $this->kernelFactory->isDebug()) {
+        if (
+            in_array('file_monitor', $config['webserver']['relod_strategy'])
+            && $this->kernelFactory->isDebug()
+            && $this->kernelFactory->getEnvironment() !== 'test'
+        ) {
             new FileMonitorWorker(
                 sourceDir: $config['relod_strategy']['file_monitor']['source_dir'],
                 filePattern: $config['relod_strategy']['file_monitor']['file_pattern'],
