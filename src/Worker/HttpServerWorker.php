@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
-use Luzrain\WorkermanBundle\RequestHandler;
 use Workerman\Worker;
 
 final class HttpServerWorker
@@ -39,7 +38,7 @@ final class HttpServerWorker
             Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['webserver']['name']));
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();
-            $worker->onMessage = (new RequestHandler($kernel))(...);
+            $worker->onMessage = $kernel->getContainer()->get('workerman.request_handler');
         };
     }
 }

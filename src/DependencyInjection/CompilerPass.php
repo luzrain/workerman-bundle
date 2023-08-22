@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
+use Luzrain\WorkermanBundle\Http\RequestHandler;
 use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
 use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -13,7 +14,7 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 
 final class CompilerPass implements CompilerPassInterface
 {
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $processes = array_map(fn (array $a) => $a[0], $container->findTaggedServiceIds('workerman.process'));
         $jobs = array_map(fn (array $a) => $a[0], $container->findTaggedServiceIds('workerman.job'));
@@ -42,6 +43,11 @@ final class CompilerPass implements CompilerPassInterface
         $container
             ->register(RebootStrategyInterface::class, StackRebootStrategy::class)
             ->setArguments([$this->referenceMap($rebootStrategies)])
+        ;
+
+        $container
+            ->register('workerman.request_handler', RequestHandler::class)
+            ->setAutowired(true)
             ->setPublic(true)
         ;
     }
