@@ -28,6 +28,7 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.23",
         "guzzlehttp/guzzle": "^7.7",
+        "nyholm/psr7": "^1.8",
         "phpunit/phpunit": "^10.3",
         "symfony/framework-bundle": "^6.3"
     },
