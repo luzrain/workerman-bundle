@@ -9,36 +9,47 @@ use Workerman\Worker;
 
 final class HttpServerWorker
 {
-    protected const PROCESS_TITLE = 'WebServer';
+    protected const PROCESS_TITLE = 'Server';
 
     public function __construct(KernelFactory $kernelFactory, array $config)
     {
-        if (str_starts_with($config['webserver']['listen'], 'https://')) {
-            $listen = str_replace('https://', 'http://', $config['webserver']['listen']);
+        $listen = $config['listen'] ?? '';
+        $transport = 'tcp';
+        $context = [];
+
+        if (str_starts_with($listen, 'https://')) {
+            $listen = str_replace('https://', 'http://', $listen);
             $transport = 'ssl';
             $context = [
                 'ssl' => [
-                    'local_cert' => $config['webserver']['local_cert'] ?? '',
-                    'local_pk' => $config['webserver']['local_pk'] ?? '',
+                    'local_cert' => $config['local_cert'] ?? '',
+                    'local_pk' => $config['local_pk'] ?? '',
                 ],
             ];
-        } else {
-            $listen = $config['webserver']['listen'];
-            $transport = 'tcp';
-            $context = [];
+        } elseif (str_starts_with($listen, 'ws://')) {
+            $listen = str_replace('ws://', 'websocket://', $listen);
+        } elseif (str_starts_with($listen, 'wss://')) {
+            $listen = str_replace('wss://', 'websocket://', $listen);
+            $transport = 'ssl';
+            $context = [
+                'ssl' => [
+                    'local_cert' => $config['local_cert'] ?? '',
+                    'local_pk' => $config['local_pk'] ?? '',
+                ],
+            ];
         }
 
         $worker = new Worker($listen, $context);
-        $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $config['webserver']['name']);
+        $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $config['name']);
         $worker->user = $config['user'] ?? '';
         $worker->group = $config['group'] ?? '';
-        $worker->count = $config['webserver']['processes'];
+        $worker->count = $config['processes'];
         $worker->transport = $transport;
         $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $config) {
-            Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['webserver']['name']));
+            Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['name']));
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();
-            $worker->onMessage = $kernel->getContainer()->get('workerman.request_handler');
+            $worker->onMessage = $kernel->getContainer()->get($config['handler']);
         };
     }
 }

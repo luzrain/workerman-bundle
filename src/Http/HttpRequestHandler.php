@@ -21,7 +21,7 @@ use Symfony\Component\HttpKernel\TerminableInterface;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request;
 
-class RequestHandler
+class HttpRequestHandler
 {
     public static int $chunkSize = 2048;
 

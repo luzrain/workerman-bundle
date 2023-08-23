@@ -31,14 +31,15 @@ final class WorkermanExtension extends Extension
             ->addMethodCall('setWorkermanConfig', [$config])
             ->addTag('kernel.cache_warmer')
         ;
-        if (in_array('always', $config['webserver']['relod_strategy'], true)) {
+
+        if ($config['relod_strategy']['always']['active']) {
             $container
                 ->register('workerman.always_reboot_strategy', AlwaysRebootStrategy::class)
                 ->addTag('workerman.reboot_strategy')
             ;
         }
 
-        if (in_array('max_requests', $config['webserver']['relod_strategy'], true)) {
+        if ($config['relod_strategy']['max_requests']['active']) {
             $container
                 ->register('workerman.max_requests_reboot_strategy', MaxJobsRebootStrategy::class)
                 ->addTag('workerman.reboot_strategy')
@@ -49,7 +50,7 @@ final class WorkermanExtension extends Extension
             ;
         }
 
-        if (in_array('exception', $config['webserver']['relod_strategy'], true)) {
+        if ($config['relod_strategy']['exception']['active']) {
             $container
                 ->register('workerman.exception_reboot_strategy', ExceptionRebootStrategy::class)
                 ->setArguments([$config['relod_strategy']['exception']['allowed_exceptions']])

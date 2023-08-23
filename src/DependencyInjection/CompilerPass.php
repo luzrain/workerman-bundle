@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
-use Luzrain\WorkermanBundle\Http\RequestHandler;
+use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
 use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
 use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -46,7 +46,7 @@ final class CompilerPass implements CompilerPassInterface
         ;
 
         $container
-            ->register('workerman.request_handler', RequestHandler::class)
+            ->register('workerman.http_request_handler', HttpRequestHandler::class)
             ->setAutowired(true)
             ->setPublic(true)
         ;

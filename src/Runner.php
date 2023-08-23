@@ -51,16 +51,16 @@ final class Runner implements RunnerInterface
         Worker::$stdoutFile = $config['stdout_file'];
         Worker::$stopTimeout = $config['stop_timeout'];
 
-        if ($config['webserver']['processes'] === null || $config['webserver']['processes'] > 0) {
-            $config['webserver']['processes'] ??= Utils::cpuCount() * 2;
-            new HttpServerWorker($this->kernelFactory, $config);
+        foreach ($config['servers'] as $serverConfig) {
+            $serverConfig['processes'] ??= Utils::cpuCount() * 2;
+            new HttpServerWorker($this->kernelFactory, $serverConfig);
         }
 
         if (!empty($schedulerConfig)) {
             new SchedulerWorker($this->kernelFactory, $config, $schedulerConfig);
         }
 
-        if (in_array('file_monitor', $config['webserver']['relod_strategy']) && $this->kernelFactory->isDebug()) {
+        if ($config['relod_strategy']['file_monitor']['active'] && $this->kernelFactory->isDebug()) {
             new FileMonitorWorker(
                 sourceDir: $config['relod_strategy']['file_monitor']['source_dir'],
                 filePattern: $config['relod_strategy']['file_monitor']['file_pattern'],

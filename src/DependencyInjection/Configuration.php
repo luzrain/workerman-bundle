@@ -48,40 +48,36 @@ final class Configuration implements ConfigurationInterface
                     ->info('Max package size can be received')
                     ->defaultValue(10 * 1024 * 1024)
                     ->end()
-                ->arrayNode('webserver')
-                    ->info('Webserver configugation')
-                    ->addDefaultsIfNotSet()
-                    ->children()
-                        ->scalarNode('name')
-                            ->info('Webserver process name')
-                            ->defaultValue('Symfony Workerman Server')
-                            ->end()
-                        ->scalarNode('listen')->defaultValue('http://0.0.0.0:80')
-                            ->info('Listen address (http and https supported)')
-                            ->validate()
-                                ->ifTrue($this->listenValidate(...))
-                                ->thenInvalid('The supported protocols is http:// and https://')
+                ->arrayNode('servers')
+                    ->prototype('array')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('name')
+                                ->info('Server process name')
+                                ->isRequired()
+                                ->cannotBeEmpty()
                                 ->end()
-                            ->end()
-                        ->scalarNode('local_cert')
-                            ->info('Path to local certificate file on filesystem')
-                            ->defaultNull()
-                            ->end()
-                        ->scalarNode('local_pk')
-                            ->info('Path to local private key file on filesystem')
-                            ->defaultNull()
-                            ->end()
-                        ->integerNode('processes')
-                            ->info('Number of webserver worker processes. Default: number of CPU cores * 2')
-                            ->defaultNull()
-                            ->end()
-                        ->arrayNode('relod_strategy')
-                            ->info('Array of reload strategies. Available strategies: ' . implode(', ', $this->getAvailableReloadStrategies()))
-                            ->prototype('scalar')->end()
-                            ->defaultValue(['exception', 'file_monitor'])
-                            ->validate()
-                                ->always()
-                                ->then($this->relodStrategyValidate(...))
+                            ->scalarNode('listen')
+                                ->info('Listen address')
+                                ->defaultNull()
+                                ->example('http://0.0.0.0:80')
+                                ->end()
+                            ->scalarNode('local_cert')
+                                ->info('Path to local certificate file on filesystem')
+                                ->defaultNull()
+                                ->end()
+                            ->scalarNode('local_pk')
+                                ->info('Path to local private key file on filesystem')
+                                ->defaultNull()
+                                ->end()
+                            ->integerNode('processes')
+                                ->info('Number of webserver worker processes. Default: number of CPU cores * 2')
+                                ->defaultNull()
+                                ->end()
+                            ->scalarNode('handler')
+                                ->info('Request handler service')
+                                ->cannotBeEmpty()
+                                ->defaultValue('workerman.http_request_handler')
                                 ->end()
                             ->end()
                         ->end()
@@ -94,7 +90,12 @@ final class Configuration implements ConfigurationInterface
                             ->info('If an exception is thrown during the request handling, the worker is rebooted')
                             ->addDefaultsIfNotSet()
                             ->children()
+                                ->booleanNode('active')
+                                    ->info('Is exception strategy active')
+                                    ->defaultTrue()
+                                    ->end()
                                 ->arrayNode('allowed_exceptions')
+                                    ->info('List of allowed exceptions that not will not trigger a reload')
                                     ->prototype('scalar')->end()
                                     ->defaultValue([
                                         'Symfony\Component\HttpKernel\Exception\HttpExceptionInterface',
@@ -107,6 +108,10 @@ final class Configuration implements ConfigurationInterface
                             ->info('The worker is rebooted on every N request to prevent memory leaks')
                             ->addDefaultsIfNotSet()
                             ->children()
+                                ->booleanNode('active')
+                                    ->info('Is max_requests strategy active')
+                                    ->defaultFalse()
+                                    ->end()
                                 ->integerNode('requests')
                                     ->info('Maximum number of request after that worker will be reloaded')
                                     ->defaultValue(1000)
@@ -121,7 +126,12 @@ final class Configuration implements ConfigurationInterface
                             ->info('All workers is rebooted each time that you change files')
                             ->addDefaultsIfNotSet()
                             ->children()
+                                ->booleanNode('active')
+                                    ->info('Is file_monitor strategy active')
+                                    ->defaultFalse()
+                                    ->end()
                                 ->arrayNode('source_dir')
+                                    ->info('Source directories for file monitoring')
                                     ->prototype('scalar')->end()
                                     ->defaultValue([
                                         '%kernel.project_dir%/src',
@@ -129,6 +139,7 @@ final class Configuration implements ConfigurationInterface
                                     ])
                                     ->end()
                                 ->arrayNode('file_pattern')
+                                    ->info('Monitored files patterns')
                                     ->prototype('scalar')->end()
                                     ->defaultValue([
                                         '*.php',
@@ -137,43 +148,20 @@ final class Configuration implements ConfigurationInterface
                                     ->end()
                                 ->end()
                             ->end()
+                        ->arrayNode('always')
+                            ->info('Worker rebooted after each request')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->booleanNode('active')
+                                    ->info('Is always strategy active')
+                                    ->defaultFalse()
+                                    ->end()
+                                ->end()
+                            ->end()
                         ->end()
                     ->end()
                 ->end();
 
         return $treeBuilder;
-    }
-
-    private function listenValidate(string $listen): bool
-    {
-        return !(str_starts_with($listen, 'http://') || str_starts_with($listen, 'https://'));
-    }
-
-    private function relodStrategyValidate(array $array): array
-    {
-        $unsupportedStrategies = [];
-
-        foreach ($array as $strategy) {
-            if (!in_array($strategy, $this->getAvailableReloadStrategies(), true)) {
-                $unsupportedStrategies[] = $strategy;
-            }
-        }
-
-        if (!empty($unsupportedStrategies)) {
-            throw new \InvalidArgumentException(
-                sprintf(
-                    'Strategy %s is not available. Available strategies: %s',
-                    implode(', ', $unsupportedStrategies),
-                    implode(', ', $this->getAvailableReloadStrategies()),
-                ),
-            );
-        }
-
-        return $array;
-    }
-
-    private function getAvailableReloadStrategies(): array
-    {
-        return ['always', 'exception', 'max_requests', 'file_monitor'];
     }
 }
