@@ -7,7 +7,7 @@ namespace Luzrain\WorkermanBundle\Worker;
 use Luzrain\WorkermanBundle\KernelFactory;
 use Workerman\Worker;
 
-final class HttpServerWorker
+final class ServerWorker
 {
     protected const PROCESS_TITLE = 'Server';
 

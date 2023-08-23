@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle;
 
 use Luzrain\WorkermanBundle\Worker\FileMonitorWorker;
-use Luzrain\WorkermanBundle\Worker\HttpServerWorker;
 use Luzrain\WorkermanBundle\Worker\SchedulerWorker;
+use Luzrain\WorkermanBundle\Worker\ServerWorker;
 use Luzrain\WorkermanBundle\Worker\SupervisorWorker;
 use Symfony\Component\Runtime\RunnerInterface;
 use Workerman\Connection\TcpConnection;
@@ -53,7 +53,7 @@ final class Runner implements RunnerInterface
 
         foreach ($config['servers'] as $serverConfig) {
             $serverConfig['processes'] ??= Utils::cpuCount() * 2;
-            new HttpServerWorker($this->kernelFactory, $serverConfig);
+            new ServerWorker($this->kernelFactory, $serverConfig);
         }
 
         if (!empty($schedulerConfig)) {
