@@ -21,20 +21,22 @@ use Symfony\Component\HttpKernel\TerminableInterface;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request;
 
-final class RequestHandler
+class RequestHandler
 {
-    private PsrHttpFactory $psrHttpFactory;
-    private WorkermanPsrHttpFactory $workermanPsrHttpFactory;
-    private HttpFoundationFactoryInterface $httpFoundationFactory;
-    private FinfoMimeTypeDetector $mimeTypedetector;
+    public static int $chunkSize = 2048;
+
+    protected PsrHttpFactory $psrHttpFactory;
+    protected WorkermanPsrHttpFactory $workermanPsrHttpFactory;
+    protected HttpFoundationFactoryInterface $httpFoundationFactory;
+    protected FinfoMimeTypeDetector $mimeTypedetector;
 
     public function __construct(
         private KernelInterface $kernel,
         private RebootStrategyInterface $rebootStrategy,
-        ServerRequestFactoryInterface $serverRequestFactory,
         private StreamFactoryInterface $streamFactory,
-        UploadedFileFactoryInterface $uploadedFileFactory,
         private ResponseFactoryInterface $responseFactory,
+        UploadedFileFactoryInterface $uploadedFileFactory,
+        ServerRequestFactoryInterface $serverRequestFactory,
     ) {
         $this->psrHttpFactory = new PsrHttpFactory($serverRequestFactory, $this->streamFactory, $uploadedFileFactory, $this->responseFactory);
         $this->workermanPsrHttpFactory = new WorkermanPsrHttpFactory($serverRequestFactory, $this->streamFactory);
@@ -93,12 +95,12 @@ final class RequestHandler
         }
     }
 
-    private function shouldCloseConnection(ServerRequestInterface $request): bool
+    protected function shouldCloseConnection(ServerRequestInterface $request): bool
     {
         return $request->getProtocolVersion() === '1.0' || $request->getHeaderLine('Connection') === 'close';
     }
 
-    private function getPublicPathFile(ServerRequestInterface $request): string
+    protected function getPublicPathFile(ServerRequestInterface $request): string
     {
         $checkFile = "{$this->kernel->getProjectDir()}/public{$request->getUri()->getPath()}";
         $checkFile = str_replace('..', '/', $checkFile);
@@ -106,31 +108,31 @@ final class RequestHandler
         return $checkFile;
     }
 
-    private function generateResponse(ResponseInterface $response): \Generator
+    protected function generateResponse(ResponseInterface $response): \Generator
     {
-        yield 'HTTP/' . $response->getProtocolVersion() . ' ' . $response->getStatusCode() . ' ' . $response->getReasonPhrase();
+        $msg = 'HTTP/' . $response->getProtocolVersion() . ' ' . $response->getStatusCode() . ' ' . $response->getReasonPhrase() . "\r\n";
 
         if ($response->getHeaderLine('Transfer-Encoding') === '' && $response->getHeaderLine('Content-Length') === '') {
-            yield "\r\nContent-Length: " . $response->getBody()->getSize();
+            $msg .= 'Content-Length: ' . $response->getBody()->getSize() . "\r\n";
         }
         if ($response->getHeaderLine('Content-Type') === '') {
-            yield "\r\nContent-Type: text/html";
+            $msg .= "Content-Type: text/html\r\n";
         }
         if ($response->getHeaderLine('Connection') === '') {
-            yield "\r\nConnection: keep-alive";
+            $msg .= "Connection: keep-alive\r\n";
         }
         if ($response->getHeaderLine('Server') === '') {
-            yield "\r\nServer: workerman";
+            $msg .= "Server: workerman\r\n";
         }
         foreach ($response->getHeaders() as $name => $values) {
-            yield "\r\n$name: " . implode(', ', $values);
+            $msg .= "$name: " . implode(', ', $values) . "\r\n";
         }
 
-        yield "\r\n\r\n";
+        yield "$msg\r\n";
 
-        $response->getBody()->seek(0);
+        $response->getBody()->rewind();
         while (!$response->getBody()->eof()) {
-            yield $response->getBody()->read(2048);
+            yield $response->getBody()->read(self::$chunkSize);
         }
         $response->getBody()->close();
     }
