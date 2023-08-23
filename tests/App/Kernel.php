@@ -41,10 +41,12 @@ final class Kernel extends BaseKernel
             ]);
 
             $container->loadFromExtension('workerman', [
-                'webserver' => [
-                    'listen' => 'http://127.0.0.1:8888',
-                    'processes' => 1,
-                    'relod_strategy' => ['exception'],
+                'servers' => [
+                    [
+                        'name' => 'Test server',
+                        'listen' => 'http://127.0.0.1:8888',
+                        'processes' => 1,
+                    ],
                 ],
             ]);
 
