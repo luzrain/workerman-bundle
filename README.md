@@ -3,16 +3,19 @@
 ![Symfony ^6.3](https://img.shields.io/badge/Symfony-^6.3-374151.svg?style=flat)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/luzrain/workerman-bundle/tests.yaml?branch=master)](../../actions/workflows/tests.yaml)
 
-Make symfony application faster, with less (or none) change with this bundle.
-Run http server, background asynchronius processes, and periodic tasks from one place in pure PHP with power of [Workerman](https://www.workerman.net/) framework.
+[Workerman](https://www.workerman.net/) is a high-performance, asynchronous event-driven PHP framework written in pure PHP.  
+This bundle provides a Workerman integration in Symfony, allowing you to easily create a http server, scheduler and supervisor all in one place.
+This bundle allows you to replace a traditional web application stack like php-fpm + nginx + cron + supervisord, all written in pure PHP (no Go, no external binaries).
+The request handler works in an event loop which means the Symfony kernel and the dependency injection container are preserved between requests,
+making your application faster with less (or no) code changes.
 
-## Installation
-### Install composer package
+## Getting started
+### Install composer packages
 ```bash
-$ composer require luzrain/workerman-bundle (todo)
+$ composer require luzrain/workerman-bundle nyholm/psr7
 ```
 
-### Enable the Bundle
+### Enable the bundle
 ```php
 <?php
 // config/bundles.php
@@ -23,9 +26,9 @@ return [
 ];
 ```
 
-### Configure bundle
+### Configure the bundle
 A minimal configuration might look like this.  
-For all available options, see the command output.
+For all available options with documentation, see the command output.
 ```bash
 $ console config:dump-reference workerman
 ```
@@ -34,14 +37,122 @@ $ console config:dump-reference workerman
 # config/packages/workerman.yaml
 
 workerman:
-  webserver:
-    name: 'Symfony Workerman Server'
-    listen: http://0.0.0.0:80
-    processes: 8
-    relod_strategy: [exception, file_monitor]
+  # Define as many servers on different ports as you need
+  servers:
+    - name: 'Symfony webserver'
+      listen: 'http://0.0.0.0:80' # https is also supported
+      processes: 4
+
+  relod_strategy:
+    exception:
+      active: true
+
+    file_monitor:
+      active: true
 ```
 
 ### Start application
 ```bash
 $ APP_RUNTIME=Luzrain\\WorkermanBundle\\Runtime php public/index.php start
+```
+
+## Reload strategies
+Because of the asynchronous nature of the server, the workers reuse loaded resources on each request. This means that in some cases we need to restart workers.  
+For example, after an exception is thrown, to prevent services from being in an unrecoverable state. Or every time you change the code in the IDE.  
+There are a few restart strategies that are implemented and can be enabled or disabled depending on the environment.
+
+ - **exception**  
+   Reload worker each time that an exception is thrown during the request handling.
+ - **max_requests**  
+   Reload worker on every N request to prevent memory leaks.
+ - **file_monitor**  
+   Reload all workers each time you change the code.  
+   _It is highly recommended to install the php-inotify extension for file monitoring.
+   Without it, monitoring will work in polling mode, which can be very cpu and disk intensive for large projects._
+ - **always**  
+   Reload worker after each request.
+
+See all available options for each strategy in the command output.
+```bash
+$ console config:dump-reference workerman relod_strategy
+```
+
+## Scheduler
+Periodic tasks can be configured with attributes or with tags in configuration files.  
+Schedule string can be formatted in several ways:  
+ - An integer to define the frequency as a number of seconds. Example: _60_
+ - An ISO8601 datetime format. Example: _2023-08-01T01:00:00+08:00_
+ - An ISO8601 duration format. Example: _PT1M_
+ - A relative date format as supported by DateInterval. Example: _1 minutes_
+ - A cron expression**. Example: _*/1 * * * *_
+
+** Note that you need to install the [dragonmantank/cron-expression](https://github.com/dragonmantank/cron-expression) package if you want to use cron expressions as schedule strings
+
+```php
+<?php
+
+namespace App\Jobs;
+
+use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+
+/**
+ * Attribute parameters
+ * @string name: Job name
+ * @string schedule: Job schedule in any format
+ * @string method: method to call, __invoke by default
+ * @int jitter: Maximum jitter in seconds that adds a random time offset to the schedule. Use to prevent multiple jobs from running at the same time
+ */
+#[AsScheduledJob(name: 'My scheduled job', schedule: '1 minutes')]
+final class TestJobService
+{
+    public function __invoke()
+    {
+        // ...
+    }
+}
+```
+
+```yaml
+# config/services.yaml
+
+services:
+  App\Jobs\TestJobService:
+    tags:
+      - { name: 'workerman.job', schedule: '1 minutes' }
+```
+
+## Supervisor
+Supervisor can be configured with attributes or with tags in configuration files.  
+Processes are kept alive and wake up if one of them dies.
+
+```php
+<?php
+
+namespace App\Processes;
+
+use Luzrain\WorkermanBundle\Attribute\AsProcess;
+
+/**
+ * Attribute parameters
+ * @string name: Process name
+ * @int processes: number of processes
+ * @string method: method to call, __invoke by default
+ */
+#[AsProcess(name: 'My worker', processes: 1)]
+final class TestProcess
+{
+    public function __invoke()
+    {
+        // ...
+    }
+}
+```
+
+```yaml
+# config/services.yaml
+
+services:
+  App\TestService\TestWorker1:
+    tags:
+      - { name: 'workerman.process', processes: 1 }
 ```
