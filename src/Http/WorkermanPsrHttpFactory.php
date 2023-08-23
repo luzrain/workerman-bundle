@@ -22,7 +22,9 @@ final class WorkermanPsrHttpFactory
         $psrRequest =  $this->serverRequestFactory->createServerRequest(
             method: $workermanRequest->method(),
             uri: $workermanRequest->uri(),
-            serverParams: $_SERVER,
+            serverParams: $_SERVER + [
+                'REMOTE_ADDR' => $workermanRequest->connection->getRemoteIp(),
+            ],
         );
 
         foreach ($workermanRequest->header() as $name => $value) {
