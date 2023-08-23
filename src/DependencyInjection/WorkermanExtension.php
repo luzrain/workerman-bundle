@@ -67,19 +67,19 @@ final class WorkermanExtension extends Extension
         $container->registerAttributeForAutoconfiguration(AsScheduledJob::class, $this->scheduledJobConfig(...));
     }
 
-    private function processConfig(ChildDefinition $definition, AsProcess $attribute, \ReflectionClass $reflector): void
+    private function processConfig(ChildDefinition $definition, AsProcess $attribute): void
     {
         $definition->addTag('workerman.process', [
-            'name' => $attribute->name ?? $reflector->getName(),
+            'name' => $attribute->name,
             'processes' => $attribute->processes,
             'method' => $attribute->method,
         ]);
     }
 
-    private function scheduledJobConfig(ChildDefinition $definition, AsScheduledJob $attribute, \ReflectionClass $reflector): void
+    private function scheduledJobConfig(ChildDefinition $definition, AsScheduledJob $attribute): void
     {
         $definition->addTag('workerman.job', [
-            'name' => $attribute->name ?? $reflector->getName(),
+            'name' => $attribute->name,
             'schedule' => $attribute->schedule,
             'method' => $attribute->method,
             'jitter' => $attribute->jitter,

@@ -34,17 +34,19 @@ final class SchedulerWorker
             $locator = $kernel->getContainer()->get('workerman.scheduledjob_locator');
 
             foreach ($cronJobConfig as $serviceId => $serviceConfig) {
+                $jobName = $serviceConfig['name'] ?? $serviceId;
+
                 try {
                     $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
                 } catch (\InvalidArgumentException) {
-                    Worker::log(sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $serviceConfig['name'], $serviceConfig['schedule']));
+                    Worker::log(sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $jobName, $serviceConfig['schedule']));
                     continue;
                 }
 
-                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $serviceConfig['name'], $trigger));
+                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $jobName, $trigger));
                 $service = $locator->get($serviceId);
                 $method = $serviceConfig['method'] ?? '__invoke';
-                $this->scheduleCallback($trigger, $service->$method(...), $serviceConfig['name']);
+                $this->scheduleCallback($trigger, $service->$method(...), $jobName);
             }
         };
     }
