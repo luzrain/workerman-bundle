@@ -58,7 +58,7 @@ final class Configuration implements ConfigurationInterface
                                 ->cannotBeEmpty()
                                 ->end()
                             ->scalarNode('listen')
-                                ->info('Listen address')
+                                ->info('Listen address. Supported protocols: http://, https://, ws://, wss://, tcp://')
                                 ->defaultNull()
                                 ->example('http://0.0.0.0:80')
                                 ->end()

@@ -1,9 +1,9 @@
 {
     "name": "luzrain/workerman-bundle",
-    "description": "A Workerman server as a Symfony Bundle",
+    "description": "Workerman runtime for symfony applications",
     "keywords": ["workerman", "symfony", "runtime", "php-runtime"],
     "homepage": "https://github.com/luzrain/workerman-bundle",
-    "type": "library",
+    "type": "symfony-bundle",
     "license": "MIT",
     "authors": [
         {
@@ -33,6 +33,7 @@
         "symfony/framework-bundle": "^6.3"
     },
     "suggest": {
+        "ext-event": "For better performance",
         "ext-inotify": "For effective file monitoring",
         "dragonmantank/cron-expression": "For parse cron expressions"
     },

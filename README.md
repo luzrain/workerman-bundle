@@ -3,7 +3,7 @@
 ![Symfony ^6.3](https://img.shields.io/badge/Symfony-^6.3-374151.svg?style=flat)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/luzrain/workerman-bundle/tests.yaml?branch=master)](../../actions/workflows/tests.yaml)
 
-[Workerman](https://www.workerman.net/) is a high-performance, asynchronous event-driven PHP framework written in pure PHP.  
+[Workerman](https://github.com/walkor/workerman) is a high-performance, asynchronous event-driven PHP framework written in pure PHP.  
 This bundle provides a Workerman integration in Symfony, allowing you to easily create a http server, scheduler and supervisor all in one place.
 This bundle allows you to replace a traditional web application stack like php-fpm + nginx + cron + supervisord, all written in pure PHP (no Go, no external binaries).
 The request handler works in an event loop which means the Symfony kernel and the dependency injection container are preserved between requests,
@@ -37,10 +37,9 @@ $ console config:dump-reference workerman
 # config/packages/workerman.yaml
 
 workerman:
-  # Define as many servers on different ports as you need
   servers:
     - name: 'Symfony webserver'
-      listen: 'http://0.0.0.0:80' # https is also supported
+      listen: http://0.0.0.0:80
       processes: 4
 
   relod_strategy:
@@ -56,6 +55,8 @@ workerman:
 $ APP_RUNTIME=Luzrain\\WorkermanBundle\\Runtime php public/index.php start
 ```
 
+** For better performance, Workerman recommends installing the _php-event_ extension.
+
 ## Reload strategies
 Because of the asynchronous nature of the server, the workers reuse loaded resources on each request. This means that in some cases we need to restart workers.  
 For example, after an exception is thrown, to prevent services from being in an unrecoverable state. Or every time you change the code in the IDE.  
@@ -66,11 +67,11 @@ There are a few restart strategies that are implemented and can be enabled or di
  - **max_requests**  
    Reload worker on every N request to prevent memory leaks.
  - **file_monitor**  
-   Reload all workers each time you change the code.  
-   _It is highly recommended to install the php-inotify extension for file monitoring.
-   Without it, monitoring will work in polling mode, which can be very cpu and disk intensive for large projects._
+   Reload all workers each time you change the files**.
  - **always**  
    Reload worker after each request.
+
+** It is highly recommended to install the _php-inotify_ extension for file monitoring. Without it, monitoring will work in polling mode, which can be very cpu and disk intensive for large projects.
 
 See all available options for each strategy in the command output.
 ```bash
@@ -97,10 +98,10 @@ use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
 
 /**
  * Attribute parameters
- * @string name: Job name
- * @string schedule: Job schedule in any format
- * @string method: method to call, __invoke by default
- * @int jitter: Maximum jitter in seconds that adds a random time offset to the schedule. Use to prevent multiple jobs from running at the same time
+ * name: Job name
+ * schedule: Job schedule in any format
+ * method: method to call, __invoke by default
+ * jitter: Maximum jitter in seconds that adds a random time offset to the schedule. Use to prevent multiple jobs from running at the same time
  */
 #[AsScheduledJob(name: 'My scheduled job', schedule: '1 minutes')]
 final class TestJobService
@@ -134,9 +135,9 @@ use Luzrain\WorkermanBundle\Attribute\AsProcess;
 
 /**
  * Attribute parameters
- * @string name: Process name
- * @int processes: number of processes
- * @string method: method to call, __invoke by default
+ * name: Process name
+ * processes: number of processes
+ * method: method to call, __invoke by default
  */
 #[AsProcess(name: 'My worker', processes: 1)]
 final class TestProcess
