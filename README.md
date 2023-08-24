@@ -55,7 +55,7 @@ workerman:
 $ APP_RUNTIME=Luzrain\\WorkermanBundle\\Runtime php public/index.php start
 ```
 
-** For better performance, Workerman recommends installing the _php-event_ extension.
+\* For better performance, Workerman recommends installing the _php-event_ extension.
 
 ## Reload strategies
 Because of the asynchronous nature of the server, the workers reuse loaded resources on each request. This means that in some cases we need to restart workers.  
@@ -78,6 +78,24 @@ See all available options for each strategy in the command output.
 $ console config:dump-reference workerman relod_strategy
 ```
 
+### Implement your own reload strategies
+You can create reload strategy with your own logic by implementing the RebootStrategyInterface and adding the `workerman.reboot_strategy` tag to the service.
+```php
+<?php
+
+use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+
+#[AutoconfigureTag('workerman.reboot_strategy')]
+final class TestRebootStrategy implements RebootStrategyInterface
+{
+    public function shouldReboot(): bool
+    {
+        return true;
+    }
+}
+```
+
 ## Scheduler
 Periodic tasks can be configured with attributes or with tags in configuration files.  
 Schedule string can be formatted in several ways:  
@@ -92,8 +110,6 @@ Schedule string can be formatted in several ways:
 ```php
 <?php
 
-namespace App\Jobs;
-
 use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
 
 /**
@@ -104,7 +120,7 @@ use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
  * jitter: Maximum jitter in seconds that adds a random time offset to the schedule. Use to prevent multiple jobs from running at the same time
  */
 #[AsScheduledJob(name: 'My scheduled job', schedule: '1 minutes')]
-final class TestJobService
+final class JobService
 {
     public function __invoke()
     {
@@ -117,7 +133,7 @@ final class TestJobService
 # config/services.yaml
 
 services:
-  App\Jobs\TestJobService:
+  App\JobService:
     tags:
       - { name: 'workerman.job', schedule: '1 minutes' }
 ```
@@ -129,8 +145,6 @@ Processes are kept alive and wake up if one of them dies.
 ```php
 <?php
 
-namespace App\Processes;
-
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
 
 /**
@@ -140,7 +154,7 @@ use Luzrain\WorkermanBundle\Attribute\AsProcess;
  * method: method to call, __invoke by default
  */
 #[AsProcess(name: 'My worker', processes: 1)]
-final class TestProcess
+final class ProcessService
 {
     public function __invoke()
     {
@@ -153,7 +167,7 @@ final class TestProcess
 # config/services.yaml
 
 services:
-  App\TestService\TestWorker1:
+  App\ProcessService:
     tags:
       - { name: 'workerman.process', processes: 1 }
 ```
