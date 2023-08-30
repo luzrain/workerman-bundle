@@ -32,28 +32,28 @@ final class WorkermanExtension extends Extension
             ->addTag('kernel.cache_warmer')
         ;
 
-        if ($config['relod_strategy']['always']['active']) {
+        if ($config['reload_strategy']['always']['active']) {
             $container
                 ->register('workerman.always_reboot_strategy', AlwaysRebootStrategy::class)
                 ->addTag('workerman.reboot_strategy')
             ;
         }
 
-        if ($config['relod_strategy']['max_requests']['active']) {
+        if ($config['reload_strategy']['max_requests']['active']) {
             $container
                 ->register('workerman.max_requests_reboot_strategy', MaxJobsRebootStrategy::class)
                 ->addTag('workerman.reboot_strategy')
                 ->setArguments([
-                    $config['relod_strategy']['max_requests']['requests'],
-                    $config['relod_strategy']['max_requests']['dispersion'],
+                    $config['reload_strategy']['max_requests']['requests'],
+                    $config['reload_strategy']['max_requests']['dispersion'],
                 ])
             ;
         }
 
-        if ($config['relod_strategy']['exception']['active']) {
+        if ($config['reload_strategy']['exception']['active']) {
             $container
                 ->register('workerman.exception_reboot_strategy', ExceptionRebootStrategy::class)
-                ->setArguments([$config['relod_strategy']['exception']['allowed_exceptions']])
+                ->setArguments([$config['reload_strategy']['exception']['allowed_exceptions']])
                 ->addTag('workerman.reboot_strategy')
                 ->addTag('kernel.event_listener', [
                     'event' => 'kernel.exception',

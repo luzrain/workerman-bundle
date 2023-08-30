@@ -82,7 +82,7 @@ final class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
-                ->arrayNode('relod_strategy')
+                ->arrayNode('reload_strategy')
                     ->info('Reload strategies configuration')
                     ->addDefaultsIfNotSet()
                     ->children()

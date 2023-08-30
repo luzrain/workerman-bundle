@@ -42,7 +42,7 @@ workerman:
       listen: http://0.0.0.0:80
       processes: 4
 
-  relod_strategy:
+  reload_strategy:
     exception:
       active: true
 
@@ -75,7 +75,7 @@ There are a few restart strategies that are implemented and can be enabled or di
 
 See all available options for each strategy in the command output.
 ```bash
-$ console config:dump-reference workerman relod_strategy
+$ console config:dump-reference workerman reload_strategy
 ```
 
 ### Implement your own reload strategies
