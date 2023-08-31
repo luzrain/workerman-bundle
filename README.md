@@ -30,7 +30,7 @@ return [
 A minimal configuration might look like this.  
 For all available options with documentation, see the command output.
 ```bash
-$ console config:dump-reference workerman
+$ bin/console config:dump-reference workerman
 ```
 
 ```yaml
@@ -75,7 +75,7 @@ There are a few restart strategies that are implemented and can be enabled or di
 
 See all available options for each strategy in the command output.
 ```bash
-$ console config:dump-reference workerman reload_strategy
+$ bin/console config:dump-reference workerman reload_strategy
 ```
 
 ### Implement your own reload strategies
