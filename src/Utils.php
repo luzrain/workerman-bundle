@@ -6,6 +6,10 @@ namespace Luzrain\WorkermanBundle;
 
 final class Utils
 {
+    private function __construct()
+    {
+    }
+
     public static function cpuCount(): int
     {
         // Windows does not support the number of processes setting.
