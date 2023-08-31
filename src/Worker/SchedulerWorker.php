@@ -15,15 +15,15 @@ final class SchedulerWorker
 {
     private const PROCESS_TITLE = 'Scheduler';
 
-    public function __construct(KernelFactory $kernelFactory, array $config, array $cronJobConfig)
+    public function __construct(KernelFactory $kernelFactory, string|null $user, string|null $group, array $schedulerConfig)
     {
         $worker = new Worker();
         $worker->name = sprintf('[%s]', self::PROCESS_TITLE);
-        $worker->user = $config['user'] ?? '';
-        $worker->group = $config['group'] ?? '';
+        $worker->user = $user ?? '';
+        $worker->group = $group ?? '';
         $worker->count = 1;
         $worker->reloadable = false;
-        $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $cronJobConfig) {
+        $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $schedulerConfig) {
             Worker::log(sprintf('[%s] started', self::PROCESS_TITLE));
 
             \pcntl_signal(\SIGCHLD, \SIG_IGN);
@@ -33,7 +33,7 @@ final class SchedulerWorker
             /** @var ContainerInterface $locator */
             $locator = $kernel->getContainer()->get('workerman.scheduledjob_locator');
 
-            foreach ($cronJobConfig as $serviceId => $serviceConfig) {
+            foreach ($schedulerConfig as $serviceId => $serviceConfig) {
                 $jobName = $serviceConfig['name'] ?? $serviceId;
 
                 try {

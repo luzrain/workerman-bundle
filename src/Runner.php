@@ -52,23 +52,39 @@ final class Runner implements RunnerInterface
         Worker::$stopTimeout = $config['stop_timeout'];
 
         foreach ($config['servers'] as $serverConfig) {
-            $serverConfig['processes'] ??= Utils::cpuCount() * 2;
-            new ServerWorker($this->kernelFactory, $serverConfig);
+            new ServerWorker(
+                kernelFactory: $this->kernelFactory,
+                user: $config['user'],
+                group: $config['group'],
+                serverConfig: $serverConfig,
+            );
         }
 
         if (!empty($schedulerConfig)) {
-            new SchedulerWorker($this->kernelFactory, $config, $schedulerConfig);
+            new SchedulerWorker(
+                kernelFactory: $this->kernelFactory,
+                user: $config['user'],
+                group: $config['group'],
+                schedulerConfig: $schedulerConfig,
+            );
         }
 
         if ($config['reload_strategy']['file_monitor']['active'] && $this->kernelFactory->isDebug()) {
             new FileMonitorWorker(
+                user: $config['user'],
+                group: $config['group'],
                 sourceDir: $config['reload_strategy']['file_monitor']['source_dir'],
                 filePattern: $config['reload_strategy']['file_monitor']['file_pattern'],
             );
         }
 
         if (!empty($processConfig)) {
-            new SupervisorWorker($this->kernelFactory, $config, $processConfig);
+            new SupervisorWorker(
+                kernelFactory: $this->kernelFactory,
+                user: $config['user'],
+                group: $config['group'],
+                processConfig: $processConfig,
+            );
         }
 
         Worker::runAll();

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
+use Luzrain\WorkermanBundle\Utils;
 use Workerman\Worker;
 
 final class ServerWorker
 {
     protected const PROCESS_TITLE = 'Server';
 
-    public function __construct(KernelFactory $kernelFactory, array $config)
+    public function __construct(KernelFactory $kernelFactory, string|null $user, string|null $group, array $serverConfig)
     {
-        $listen = $config['listen'] ?? '';
+        $listen = $serverConfig['listen'] ?? '';
         $transport = 'tcp';
         $context = [];
 
@@ -22,8 +23,8 @@ final class ServerWorker
             $transport = 'ssl';
             $context = [
                 'ssl' => [
-                    'local_cert' => $config['local_cert'] ?? '',
-                    'local_pk' => $config['local_pk'] ?? '',
+                    'local_cert' => $serverConfig['local_cert'] ?? '',
+                    'local_pk' => $serverConfig['local_pk'] ?? '',
                 ],
             ];
         } elseif (str_starts_with($listen, 'ws://')) {
@@ -33,23 +34,23 @@ final class ServerWorker
             $transport = 'ssl';
             $context = [
                 'ssl' => [
-                    'local_cert' => $config['local_cert'] ?? '',
-                    'local_pk' => $config['local_pk'] ?? '',
+                    'local_cert' => $serverConfig['local_cert'] ?? '',
+                    'local_pk' => $serverConfig['local_pk'] ?? '',
                 ],
             ];
         }
 
         $worker = new Worker($listen, $context);
-        $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $config['name']);
-        $worker->user = $config['user'] ?? '';
-        $worker->group = $config['group'] ?? '';
-        $worker->count = $config['processes'];
+        $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $serverConfig['name']);
+        $worker->user = $user ?? '';
+        $worker->group = $group ?? '';
+        $worker->count = $serverConfig['processes'] ?? Utils::cpuCount() * 2;
         $worker->transport = $transport;
-        $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $config) {
-            Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $config['name']));
+        $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $serverConfig) {
+            Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $serverConfig['name']));
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();
-            $worker->onMessage = $kernel->getContainer()->get($config['handler']);
+            $worker->onMessage = $kernel->getContainer()->get($serverConfig['handler']);
         };
     }
 }
