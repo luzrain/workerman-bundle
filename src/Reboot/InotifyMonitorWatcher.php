@@ -24,6 +24,8 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
             $dirIterator = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
             $iterator = new \RecursiveIteratorIterator($dirIterator, \RecursiveIteratorIterator::SELF_FIRST);
 
+            $this->watchDir($dir);
+
             foreach ($iterator as $file) {
                 /** @var \SplFileInfo $file */
                 if ($file->isDir()) {
