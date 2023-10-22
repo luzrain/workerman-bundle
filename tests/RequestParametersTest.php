@@ -64,7 +64,7 @@ final class RequestParametersTest extends KernelTestCase
                 [
                     'name' => 'test-file-5',
                     'contents' => 'test-file-5-content',
-                ]
+                ],
             ],
         ]);
     }

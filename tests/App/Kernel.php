@@ -31,7 +31,7 @@ final class Kernel extends BaseKernel
 
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
-        $loader->load(function(ContainerBuilder $container) use ($loader) {
+        $loader->load(function (ContainerBuilder $container) use ($loader) {
             $container->loadFromExtension('framework', [
                 'test' => true,
                 'router' => [
