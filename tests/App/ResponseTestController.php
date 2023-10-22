@@ -8,9 +8,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-final class Controller extends AbstractController
+final class ResponseTestController extends AbstractController
 {
-    #[Route('/test', name: 'app_test')]
+    #[Route('/response_test', name: 'app_response_test')]
     public function __invoke(): Response
     {
         return new Response(

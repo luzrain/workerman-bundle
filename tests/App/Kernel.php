@@ -55,7 +55,8 @@ final class Kernel extends BaseKernel
                 ->addTag('routing.route_loader')
             ;
 
-            $container->autowire(Controller::class)->setAutoconfigured(true);
+            $container->autowire(ResponseTestController::class)->setAutoconfigured(true);
+            $container->autowire(RequestTestController::class)->setAutoconfigured(true);
             $container->autowire(ScheduledJob::class)->setAutoconfigured(true);
             $container->autowire(Process::class)->setAutoconfigured(true);
 
