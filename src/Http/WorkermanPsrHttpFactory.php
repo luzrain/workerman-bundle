@@ -19,7 +19,7 @@ final class WorkermanPsrHttpFactory
 
     public function createRequest(Request $workermanRequest): ServerRequestInterface
     {
-        $psrRequest =  $this->serverRequestFactory->createServerRequest(
+        $psrRequest = $this->serverRequestFactory->createServerRequest(
             method: $workermanRequest->method(),
             uri: $workermanRequest->uri(),
             serverParams: $_SERVER + [
@@ -35,9 +35,13 @@ final class WorkermanPsrHttpFactory
             }
         }
 
-        $psrRequest = $psrRequest->withBody($this->streamFactory->createStream($workermanRequest->rawBody()));
-        $psrRequest = $psrRequest->withProtocolVersion($workermanRequest->protocolVersion());
-
-        return $psrRequest;
+        return $psrRequest
+            ->withProtocolVersion($workermanRequest->protocolVersion())
+            ->withBody($this->streamFactory->createStream($workermanRequest->rawBody()))
+            ->withCookieParams($workermanRequest->cookie())
+            ->withQueryParams($workermanRequest->get())
+            ->withParsedBody($workermanRequest->post())
+            ->withUploadedFiles($workermanRequest->file())
+        ;
     }
 }
