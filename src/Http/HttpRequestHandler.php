@@ -39,7 +39,7 @@ class HttpRequestHandler
         ServerRequestFactoryInterface $serverRequestFactory,
     ) {
         $this->psrHttpFactory = new PsrHttpFactory($serverRequestFactory, $this->streamFactory, $uploadedFileFactory, $this->responseFactory);
-        $this->workermanPsrHttpFactory = new WorkermanPsrHttpFactory($serverRequestFactory, $this->streamFactory);
+        $this->workermanPsrHttpFactory = new WorkermanPsrHttpFactory($serverRequestFactory, $this->streamFactory, $uploadedFileFactory);
         $this->httpFoundationFactory = new HttpFoundationFactory();
         $this->mimeTypedetector = new FinfoMimeTypeDetector();
     }
