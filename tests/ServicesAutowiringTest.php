@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Test;
 
-use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
-use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
+use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
 use Psr\Container\ContainerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -17,6 +16,6 @@ final class ServicesAutowiringTest extends KernelTestCase
 
         $this->assertInstanceOf(ContainerInterface::class, $container->get('workerman.process_locator'));
         $this->assertInstanceOf(ContainerInterface::class, $container->get('workerman.scheduledjob_locator'));
-        $this->assertInstanceOf(StackRebootStrategy::class, $container->get(RebootStrategyInterface::class));
+        $this->assertInstanceOf(HttpRequestHandler::class, $container->get('workerman.http_request_handler'));
     }
 }

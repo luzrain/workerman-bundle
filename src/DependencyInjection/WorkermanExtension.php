@@ -7,12 +7,22 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
 use Luzrain\WorkermanBundle\ConfigLoader;
+use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
+use Luzrain\WorkermanBundle\Http\WorkermanHttpMessageFactory;
 use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface;
+use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 final class WorkermanExtension extends Extension
 {
@@ -23,13 +33,50 @@ final class WorkermanExtension extends Extension
 
         $container
             ->register('workerman.config_loader', ConfigLoader::class)
+            ->addMethodCall('setWorkermanConfig', [$config])
+            ->addTag('kernel.cache_warmer')
             ->setArguments([
                 $container->getParameter('kernel.project_dir'),
                 $container->getParameter('kernel.cache_dir'),
                 $container->getParameter('kernel.debug'),
             ])
-            ->addMethodCall('setWorkermanConfig', [$config])
-            ->addTag('kernel.cache_warmer')
+        ;
+
+        $container
+            ->register('workerman.symfony_http_message_factory', PsrHttpFactory::class)
+            ->setArguments([
+                new Reference(ServerRequestFactoryInterface::class),
+                new Reference(StreamFactoryInterface::class),
+                new Reference(UploadedFileFactoryInterface::class),
+                new Reference(ResponseFactoryInterface::class),
+            ])
+        ;
+
+        $container
+            ->register('workerman.http_foundation_factory', HttpFoundationFactory::class)
+        ;
+
+        $container
+            ->register('workerman.workerman_http_message_factory', WorkermanHttpMessageFactory::class)
+            ->setArguments([
+                new Reference(ServerRequestFactoryInterface::class),
+                new Reference(StreamFactoryInterface::class),
+                new Reference(UploadedFileFactoryInterface::class),
+            ])
+        ;
+
+        $container
+            ->register('workerman.http_request_handler', HttpRequestHandler::class)
+            ->setPublic(true)
+            ->setArguments([
+                new Reference(KernelInterface::class),
+                new Reference(StreamFactoryInterface::class),
+                new Reference(ResponseFactoryInterface::class),
+                new Reference('workerman.reboot_strategy'),
+                new Reference('workerman.symfony_http_message_factory'),
+                new Reference('workerman.http_foundation_factory'),
+                new Reference('workerman.workerman_http_message_factory'),
+            ])
         ;
 
         if ($config['reload_strategy']['always']['active']) {
@@ -53,12 +100,14 @@ final class WorkermanExtension extends Extension
         if ($config['reload_strategy']['exception']['active']) {
             $container
                 ->register('workerman.exception_reboot_strategy', ExceptionRebootStrategy::class)
-                ->setArguments([$config['reload_strategy']['exception']['allowed_exceptions']])
                 ->addTag('workerman.reboot_strategy')
                 ->addTag('kernel.event_listener', [
                     'event' => 'kernel.exception',
                     'priority' => -100,
                     'method' => 'onException',
+                ])
+                ->setArguments([
+                    $config['reload_strategy']['exception']['allowed_exceptions'],
                 ])
             ;
         }

@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ResponseTest extends KernelTestCase
 {
-    public function testResponse200(): void
+    public function testController(): void
     {
         $client = new Client(['http_errors' => false]);
 
@@ -19,7 +19,7 @@ final class ResponseTest extends KernelTestCase
         $this->assertSame(200, $response->getStatusCode());
     }
 
-    public function testResponse404(): void
+    public function testNotFound(): void
     {
         $client = new Client(['http_errors' => false]);
 

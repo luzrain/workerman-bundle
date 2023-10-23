@@ -9,39 +9,28 @@ use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
 use Luzrain\WorkermanBundle\Utils;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\UploadedFileFactoryInterface;
-use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
-use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Bridge\PsrHttpMessage\HttpFoundationFactoryInterface;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\HttpKernel\TerminableInterface;
 use Workerman\Connection\TcpConnection;
 use Workerman\Protocols\Http\Request;
 
-class HttpRequestHandler
+final class HttpRequestHandler
 {
     public static int $chunkSize = 2048;
 
-    protected PsrHttpFactory $psrHttpFactory;
-    protected WorkermanPsrHttpFactory $workermanPsrHttpFactory;
-    protected HttpFoundationFactoryInterface $httpFoundationFactory;
-    protected FinfoMimeTypeDetector $mimeTypedetector;
-
     public function __construct(
         private KernelInterface $kernel,
-        private RebootStrategyInterface $rebootStrategy,
         private StreamFactoryInterface $streamFactory,
         private ResponseFactoryInterface $responseFactory,
-        UploadedFileFactoryInterface $uploadedFileFactory,
-        ServerRequestFactoryInterface $serverRequestFactory,
+        private RebootStrategyInterface $rebootStrategy,
+        private HttpMessageFactoryInterface $psrHttpFactory,
+        private HttpFoundationFactoryInterface $httpFoundationFactory,
+        private WorkermanHttpMessageFactory $workermanHttpFactory,
     ) {
-        $this->psrHttpFactory = new PsrHttpFactory($serverRequestFactory, $this->streamFactory, $uploadedFileFactory, $this->responseFactory);
-        $this->workermanPsrHttpFactory = new WorkermanPsrHttpFactory($serverRequestFactory, $this->streamFactory, $uploadedFileFactory);
-        $this->httpFoundationFactory = new HttpFoundationFactory();
-        $this->mimeTypedetector = new FinfoMimeTypeDetector();
     }
 
     public function __invoke(TcpConnection $connection, Request $workermanRequest): void
@@ -50,35 +39,45 @@ class HttpRequestHandler
             \memory_reset_peak_usage();
         }
 
-        $request = $this->workermanPsrHttpFactory->createRequest($workermanRequest);
-        $shouldCloseConnection = $this->shouldCloseConnection($request);
+        $psrRequest = $this->workermanHttpFactory->createRequest($workermanRequest);
+        $shouldCloseConnection = $psrRequest->getProtocolVersion() === '1.0' || $psrRequest->getHeaderLine('Connection') === 'close';
 
-        if (\is_file($file = $this->getPublicPathFile($request))) {
-            $response = $this->responseFactory->createResponse();
-            $response = $response->withHeader('Content-Type', $this->mimeTypedetector->detectMimeTypeFromPath($file));
-            $response = $response->withBody($this->streamFactory->createStreamFromFile($file));
-
-            foreach ($this->generateResponse($response) as $chunk) {
-                $connection->send($chunk, true);
-            }
-
-            if ($shouldCloseConnection) {
-                $connection->close();
-            }
-
-            return;
+        if (\is_file($file = $this->getPublicPathFile($psrRequest))) {
+            $this->createfileResponse($connection, $shouldCloseConnection, $file);
+        } else {
+            $this->createApplicationResponse($connection, $shouldCloseConnection, $psrRequest);
         }
+    }
 
-        $this->kernel->boot();
-        $symfonyRequest = $this->httpFoundationFactory->createRequest($request);
-        $symfonyResponse = $this->kernel->handle($symfonyRequest);
-        $response = $this->psrHttpFactory->createResponse($symfonyResponse);
-
-        if ($shouldCloseConnection) {
-            $response = $response->withAddedHeader('Connection', 'close');
-        }
+    private function createfileResponse(TcpConnection $connection, bool $shouldCloseConnection, string $file): void
+    {
+        $mimeTypedetector = new FinfoMimeTypeDetector();
+        $response = $this->responseFactory->createResponse()
+            ->withHeader('Content-Type', $mimeTypedetector->detectMimeTypeFromPath($file))
+            ->withBody($this->streamFactory->createStreamFromFile($file));
 
         foreach ($this->generateResponse($response) as $chunk) {
+            $connection->send($chunk, true);
+        }
+
+        if ($shouldCloseConnection) {
+            $connection->close();
+        }
+    }
+
+    private function createApplicationResponse(TcpConnection $connection, bool $shouldCloseConnection, ServerRequestInterface $psrRequest): void
+    {
+        $this->kernel->boot();
+
+        $symfonyRequest = $this->httpFoundationFactory->createRequest($psrRequest);
+        $symfonyResponse = $this->kernel->handle($symfonyRequest);
+        $sprResponse = $this->psrHttpFactory->createResponse($symfonyResponse);
+
+        if ($shouldCloseConnection) {
+            $sprResponse = $sprResponse->withAddedHeader('Connection', 'close');
+        }
+
+        foreach ($this->generateResponse($sprResponse) as $chunk) {
             $connection->send($chunk, true);
         }
 
@@ -95,12 +94,7 @@ class HttpRequestHandler
         }
     }
 
-    protected function shouldCloseConnection(ServerRequestInterface $request): bool
-    {
-        return $request->getProtocolVersion() === '1.0' || $request->getHeaderLine('Connection') === 'close';
-    }
-
-    protected function getPublicPathFile(ServerRequestInterface $request): string
+    private function getPublicPathFile(ServerRequestInterface $request): string
     {
         $checkFile = "{$this->kernel->getProjectDir()}/public{$request->getUri()->getPath()}";
         $checkFile = str_replace('..', '/', $checkFile);
@@ -108,7 +102,7 @@ class HttpRequestHandler
         return $checkFile;
     }
 
-    protected function generateResponse(ResponseInterface $response): \Generator
+    private function generateResponse(ResponseInterface $response): \Generator
     {
         $msg = 'HTTP/' . $response->getProtocolVersion() . ' ' . $response->getStatusCode() . ' ' . $response->getReasonPhrase() . "\r\n";
 

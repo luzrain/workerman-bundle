@@ -11,7 +11,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Workerman\Protocols\Http\Request;
 
-final class WorkermanPsrHttpFactory
+final class WorkermanHttpMessageFactory
 {
     public function __construct(
         private ServerRequestFactoryInterface $serverRequestFactory,
@@ -31,71 +31,65 @@ final class WorkermanPsrHttpFactory
         );
 
         foreach ($workermanRequest->header() as $name => $value) {
-            try {
-                $psrRequest = $psrRequest->withHeader($name, $value);
-            } catch (\InvalidArgumentException) {
-                // ignore invalid header
-            }
+            $psrRequest = $psrRequest->withHeader($name, $value);
         }
 
         return $psrRequest
             ->withProtocolVersion($workermanRequest->protocolVersion())
-            ->withBody($this->streamFactory->createStream($workermanRequest->rawBody()))
             ->withCookieParams($workermanRequest->cookie())
             ->withQueryParams($workermanRequest->get())
             ->withParsedBody($workermanRequest->post())
             ->withUploadedFiles($this->normalizeFiles($workermanRequest->file()))
+            ->withBody($this->streamFactory->createStream($workermanRequest->rawBody()))
         ;
     }
 
-    public function normalizeFiles(array $files)
+    private function normalizeFiles(array $files): array
     {
         $normalized = [];
-
         foreach ($files as $key => $value) {
-            if ($value instanceof UploadedFileInterface) {
-                $normalized[$key] = $value;
-            } elseif (is_array($value) && isset($value['tmp_name'])) {
+            if (is_array($value) && isset($value['tmp_name'])) {
                 $normalized[$key] = $this->createUploadedFileFromSpec($value);
             } elseif (is_array($value)) {
                 $normalized[$key] = $this->normalizeFiles($value);
-                continue;
-            } else {
-                throw new \InvalidArgumentException('Invalid value in files specification');
             }
         }
 
         return $normalized;
     }
 
-    private function createUploadedFileFromSpec(array $value)
+    /**
+     * @return list<UploadedFileInterface>|UploadedFileInterface
+     */
+    private function createUploadedFileFromSpec(array $value): array|UploadedFileInterface
     {
         if (is_array($value['tmp_name'])) {
             return $this->normalizeNestedFileSpec($value);
         }
 
         return $this->uploadedFileFactory->createUploadedFile(
-            $this->streamFactory->createStreamFromFile($value['tmp_name']),
-            (int) $value['size'],
-            (int) $value['error'],
-            $value['name'],
-            $value['type'],
+            stream: $this->streamFactory->createStreamFromFile($value['tmp_name']),
+            size: (int) $value['size'],
+            error: (int) $value['error'],
+            clientFilename: $value['name'],
+            clientMediaType: $value['type'],
         );
     }
 
-    private function normalizeNestedFileSpec(array $files = [])
+    /**
+     * @return list<UploadedFileInterface>
+     */
+    private function normalizeNestedFileSpec(array $files = []): array
     {
         $normalizedFiles = [];
-
         foreach (array_keys($files['tmp_name']) as $key) {
-            $spec = [
+            $normalizedFiles[$key] = $this->createUploadedFileFromSpec([
                 'tmp_name' => $files['tmp_name'][$key],
-                'size'     => $files['size'][$key],
-                'error'    => $files['error'][$key],
-                'name'     => $files['name'][$key],
-                'type'     => $files['type'][$key],
-            ];
-            $normalizedFiles[$key] = $this->createUploadedFileFromSpec($spec);
+                'size' => $files['size'][$key],
+                'error' => $files['error'][$key],
+                'name' => $files['name'][$key],
+                'type' => $files['type'][$key],
+            ]);
         }
 
         return $normalizedFiles;
