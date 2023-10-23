@@ -76,6 +76,7 @@ final class WorkermanExtension extends Extension
                 new Reference('workerman.symfony_http_message_factory'),
                 new Reference('workerman.http_foundation_factory'),
                 new Reference('workerman.workerman_http_message_factory'),
+                $config['response_chunk_size'],
             ])
         ;
 

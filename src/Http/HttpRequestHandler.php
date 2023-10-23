@@ -20,8 +20,6 @@ use Workerman\Protocols\Http\Request;
 
 final class HttpRequestHandler
 {
-    public static int $chunkSize = 2048;
-
     public function __construct(
         private KernelInterface $kernel,
         private StreamFactoryInterface $streamFactory,
@@ -30,6 +28,7 @@ final class HttpRequestHandler
         private HttpMessageFactoryInterface $psrHttpFactory,
         private HttpFoundationFactoryInterface $httpFoundationFactory,
         private WorkermanHttpMessageFactory $workermanHttpFactory,
+        private int $chunkSize,
     ) {
     }
 
@@ -126,7 +125,7 @@ final class HttpRequestHandler
 
         $response->getBody()->rewind();
         while (!$response->getBody()->eof()) {
-            yield $response->getBody()->read(self::$chunkSize);
+            yield $response->getBody()->read($this->chunkSize);
         }
         $response->getBody()->close();
     }
