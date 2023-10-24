@@ -52,6 +52,10 @@ workerman:
 
 ### Start application
 ```bash
+$ bin/console workerman:start
+```
+or
+```bash
 $ APP_RUNTIME=Luzrain\\WorkermanBundle\\Runtime php public/index.php start
 ```
 

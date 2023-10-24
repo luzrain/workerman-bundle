@@ -6,9 +6,14 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+use Luzrain\WorkermanBundle\Command\RestartCommand;
+use Luzrain\WorkermanBundle\Command\StartCommand;
+use Luzrain\WorkermanBundle\Command\StatusCommand;
+use Luzrain\WorkermanBundle\Command\StopCommand;
 use Luzrain\WorkermanBundle\ConfigLoader;
 use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
 use Luzrain\WorkermanBundle\Http\WorkermanHttpMessageFactory;
+use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
@@ -82,6 +87,35 @@ final class WorkermanExtension extends Extension
                 new Reference('workerman.workerman_http_message_factory'),
                 '%workerman.response_chunk_size%',
             ])
+        ;
+
+        $container
+            ->register('workerman.kernel_runner', KernelRunner::class)
+            ->setArguments([new Reference(KernelInterface::class)])
+        ;
+
+        $container
+            ->register('workerman.command.start', StartCommand::class)
+            ->addTag('console.command')
+            ->setArguments([new Reference('workerman.kernel_runner')])
+        ;
+
+        $container
+            ->register('workerman.command.stop', StopCommand::class)
+            ->addTag('console.command')
+            ->setArguments([new Reference('workerman.kernel_runner')])
+        ;
+
+        $container
+            ->register('workerman.command.status', StatusCommand::class)
+            ->addTag('console.command')
+            ->setArguments([new Reference('workerman.kernel_runner')])
+        ;
+
+        $container
+            ->register('workerman.command.restart', RestartCommand::class)
+            ->addTag('console.command')
+            ->setArguments([new Reference('workerman.kernel_runner')])
         ;
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
