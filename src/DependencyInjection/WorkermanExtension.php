@@ -32,6 +32,10 @@ final class WorkermanExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $container
+            ->setParameter('workerman.response_chunk_size', $config['response_chunk_size'])
+        ;
+
+        $container
             ->register('workerman.config_loader', ConfigLoader::class)
             ->addMethodCall('setWorkermanConfig', [$config])
             ->addTag('kernel.cache_warmer')
@@ -76,9 +80,12 @@ final class WorkermanExtension extends Extension
                 new Reference('workerman.symfony_http_message_factory'),
                 new Reference('workerman.http_foundation_factory'),
                 new Reference('workerman.workerman_http_message_factory'),
-                $config['response_chunk_size'],
+                '%workerman.response_chunk_size%',
             ])
         ;
+
+        $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
+        $container->registerAttributeForAutoconfiguration(AsScheduledJob::class, $this->scheduledJobConfig(...));
 
         if ($config['reload_strategy']['always']['active']) {
             $container
@@ -112,9 +119,6 @@ final class WorkermanExtension extends Extension
                 ])
             ;
         }
-
-        $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
-        $container->registerAttributeForAutoconfiguration(AsScheduledJob::class, $this->scheduledJobConfig(...));
     }
 
     private function processConfig(ChildDefinition $definition, AsProcess $attribute): void
