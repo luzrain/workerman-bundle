@@ -14,9 +14,9 @@ final class CompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        $processes = array_map(fn (array $a) => $a[0], $container->findTaggedServiceIds('workerman.process'));
-        $jobs = array_map(fn (array $a) => $a[0], $container->findTaggedServiceIds('workerman.job'));
-        $rebootStrategies = array_map(fn (array $a) => $a[0], $container->findTaggedServiceIds('workerman.reboot_strategy'));
+        $processes = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.process'));
+        $jobs = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.job'));
+        $rebootStrategies = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.reboot_strategy'));
 
         $container
             ->getDefinition('workerman.config_loader')
