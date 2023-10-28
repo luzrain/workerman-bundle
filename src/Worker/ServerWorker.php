@@ -6,7 +6,7 @@ namespace Luzrain\WorkermanBundle\Worker;
 
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\Utils;
-use Workerman\Worker;
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class ServerWorker
 {

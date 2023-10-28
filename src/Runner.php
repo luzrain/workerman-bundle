@@ -10,12 +10,14 @@ use Luzrain\WorkermanBundle\Worker\ServerWorker;
 use Luzrain\WorkermanBundle\Worker\SupervisorWorker;
 use Symfony\Component\Runtime\RunnerInterface;
 use Workerman\Connection\TcpConnection;
-use Workerman\Worker;
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class Runner implements RunnerInterface
 {
-    public function __construct(private KernelFactory $kernelFactory)
-    {
+    public function __construct(
+        private KernelFactory $kernelFactory,
+        private bool $extendedInterface,
+    ) {
     }
 
     public function run(): int
@@ -46,10 +48,12 @@ final class Runner implements RunnerInterface
         }
 
         TcpConnection::$defaultMaxPackageSize = $config['max_package_size'];
-        Worker::$pidFile = $config['pid_file'] ?? '';
+        Worker::$extendedInterface = $this->extendedInterface;
+        Worker::$pidFile = $config['pid_file'];
         Worker::$logFile = $config['log_file'];
         Worker::$stdoutFile = $config['stdout_file'];
         Worker::$stopTimeout = $config['stop_timeout'];
+        Worker::$onMasterReload = Utils::clearOpcache(...);
 
         foreach ($config['servers'] as $serverConfig) {
             new ServerWorker(

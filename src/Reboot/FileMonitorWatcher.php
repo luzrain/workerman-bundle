@@ -44,6 +44,6 @@ abstract class FileMonitorWatcher
 
     final protected function reboot(): void
     {
-        Utils::reboot(rebootAllWorkers: true, clearOpcache: true);
+        Utils::reboot(rebootAllWorkers: true);
     }
 }
