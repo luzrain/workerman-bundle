@@ -9,7 +9,7 @@ use Luzrain\WorkermanBundle\Scheduler\TriggerFactory;
 use Luzrain\WorkermanBundle\Scheduler\TriggerInterface;
 use Psr\Container\ContainerInterface;
 use Workerman\Timer;
-use Workerman\Worker;
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class SchedulerWorker
 {
@@ -34,12 +34,17 @@ final class SchedulerWorker
             $locator = $kernel->getContainer()->get('workerman.scheduledjob_locator');
 
             foreach ($schedulerConfig as $serviceId => $serviceConfig) {
-                $jobName = $serviceConfig['name'] ?? $serviceId;
+                $jobName = empty($serviceConfig['name']) ? $serviceId : $serviceConfig['name'];
+
+                if (empty($serviceConfig['schedule'])) {
+                    Worker::logWithLevel('WARNING', sprintf('[%s] Task "%s" skipped. Trigger has not been set', self::PROCESS_TITLE, $jobName));
+                    continue;
+                }
 
                 try {
                     $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
                 } catch (\InvalidArgumentException) {
-                    Worker::log(sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $jobName, $serviceConfig['schedule']));
+                    Worker::logWithLevel('WARNING', sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $jobName, $serviceConfig['schedule']));
                     continue;
                 }
 
@@ -70,7 +75,7 @@ final class SchedulerWorker
 
         $pid = \pcntl_fork();
         if ($pid === -1) {
-            Worker::log(sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $name));
+            Worker::logWithLevel('EMERGENCY', sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $name));
         } elseif ($pid > 0) {
             Worker::log(sprintf('[%s] Task "%s" called', self::PROCESS_TITLE, $name));
             $this->scheduleCallback($trigger, $callback, $name);

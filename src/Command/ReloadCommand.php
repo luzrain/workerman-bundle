@@ -9,12 +9,12 @@ use Luzrain\WorkermanBundle\Utils;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-final class StopCommand extends Command implements SignalableCommandInterface
+final class ReloadCommand extends Command implements SignalableCommandInterface
 {
     public function __construct(
-        private KernelRunner $kernelRunner,
         private string $pidFile,
     ) {
         parent::__construct();
@@ -22,17 +22,17 @@ final class StopCommand extends Command implements SignalableCommandInterface
 
     public static function getDefaultName(): string
     {
-        return 'workerman:stop';
+        return 'workerman:reload';
     }
 
     public static function getDefaultDescription(): string
     {
-        return 'Stop workerman server';
+        return 'Reload workers';
     }
 
     public function getSubscribedSignals(): array
     {
-        return [SIGINT];
+        return [SIGINT, SIGUSR1];
     }
 
     public function handleSignal(int|false $previousExitCode): int|false
@@ -50,12 +50,9 @@ final class StopCommand extends Command implements SignalableCommandInterface
             return self::FAILURE;
         }
 
-        $output->writeln('Workerman server is stopping...');
+        posix_kill($pid, SIGUSR1);
 
-        $this->kernelRunner->runStop();
-        $this->kernelRunner->wait();
-
-        $output->writeln('Workerman server stop success');
+        $output->writeln('Workerman server reloaded');
 
         return self::SUCCESS;
     }

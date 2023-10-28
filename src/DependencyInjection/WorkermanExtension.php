@@ -6,7 +6,8 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
-use Luzrain\WorkermanBundle\Command\RestartCommand;
+use Luzrain\WorkermanBundle\Command\AboutCommand;
+use Luzrain\WorkermanBundle\Command\ReloadCommand;
 use Luzrain\WorkermanBundle\Command\StartCommand;
 use Luzrain\WorkermanBundle\Command\StatusCommand;
 use Luzrain\WorkermanBundle\Command\StopCommand;
@@ -21,6 +22,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\PsrHttpMessage\Factory\HttpFoundationFactory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\DependencyInjection\ChildDefinition;
@@ -97,25 +99,42 @@ final class WorkermanExtension extends Extension
         $container
             ->register('workerman.command.start', StartCommand::class)
             ->addTag('console.command')
-            ->setArguments([new Reference('workerman.kernel_runner')])
+            ->setArguments([
+                new Reference('workerman.kernel_runner'),
+                new Reference(LoggerInterface::class),
+                $config['pid_file'],
+            ])
         ;
 
         $container
             ->register('workerman.command.stop', StopCommand::class)
             ->addTag('console.command')
-            ->setArguments([new Reference('workerman.kernel_runner')])
+            ->setArguments([
+                new Reference('workerman.kernel_runner'),
+                $config['pid_file'],
+            ])
         ;
 
         $container
             ->register('workerman.command.status', StatusCommand::class)
             ->addTag('console.command')
-            ->setArguments([new Reference('workerman.kernel_runner')])
+            ->setArguments([
+                new Reference('workerman.kernel_runner'),
+                $config['pid_file'],
+            ])
         ;
 
         $container
-            ->register('workerman.command.restart', RestartCommand::class)
+            ->register('workerman.command.restart', ReloadCommand::class)
             ->addTag('console.command')
-            ->setArguments([new Reference('workerman.kernel_runner')])
+            ->setArguments([
+                $config['pid_file'],
+            ])
+        ;
+
+        $container
+            ->register('workerman.command.about', AboutCommand::class)
+            ->addTag('console.command')
         ;
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
@@ -155,7 +174,7 @@ final class WorkermanExtension extends Extension
         }
     }
 
-    private function processConfig(ChildDefinition $definition, AsProcess $attribute): void
+    private function processConfig(ChildDefinition $definition, AsProcess $attribute, \ReflectionClass $refl): void
     {
         $definition->addTag('workerman.process', [
             'name' => $attribute->name,
@@ -164,7 +183,7 @@ final class WorkermanExtension extends Extension
         ]);
     }
 
-    private function scheduledJobConfig(ChildDefinition $definition, AsScheduledJob $attribute): void
+    private function scheduledJobConfig(ChildDefinition $definition, AsScheduledJob $attribute, \ReflectionClass $refl): void
     {
         $definition->addTag('workerman.job', [
             'name' => $attribute->name,

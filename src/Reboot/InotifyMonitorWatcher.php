@@ -6,7 +6,7 @@ namespace Luzrain\WorkermanBundle\Reboot;
 
 use Workerman\Events\EventInterface;
 use Workerman\Timer;
-use Workerman\Worker;
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class InotifyMonitorWatcher extends FileMonitorWatcher
 {
