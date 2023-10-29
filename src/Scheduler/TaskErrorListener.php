@@ -8,7 +8,7 @@ use Luzrain\WorkermanBundle\Events\TaskErrorEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-final class ErrorListener implements EventSubscriberInterface
+final class TaskErrorListener implements EventSubscriberInterface
 {
     public function __construct(private LoggerInterface $logger)
     {

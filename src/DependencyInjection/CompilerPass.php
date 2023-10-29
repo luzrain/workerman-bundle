@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
+use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
 use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
 use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
+use Luzrain\WorkermanBundle\Supervisor\ProcessHandler;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class CompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        $processes = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.process'));
         $tasks = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.task'));
+        $processes = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.process'));
         $rebootStrategies = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.reboot_strategy'));
 
         $container
@@ -27,17 +32,15 @@ final class CompilerPass implements CompilerPassInterface
         ;
 
         $container
-            ->register('workerman.process_locator', ServiceLocator::class)
-            ->addTag('container.service_locator')
-            ->setArguments([$this->referenceMap($processes)])
-            ->setPublic(true)
-        ;
-
-        $container
             ->register('workerman.task_locator', ServiceLocator::class)
             ->addTag('container.service_locator')
             ->setArguments([$this->referenceMap($tasks)])
-            ->setPublic(true)
+        ;
+
+        $container
+            ->register('workerman.process_locator', ServiceLocator::class)
+            ->addTag('container.service_locator')
+            ->setArguments([$this->referenceMap($processes)])
         ;
 
         $container
@@ -46,10 +49,34 @@ final class CompilerPass implements CompilerPassInterface
         ;
 
         $container
+            ->register('workerman.http_request_handler', HttpRequestHandler::class)
+            ->setPublic(true)
+            ->setArguments([
+                new Reference(KernelInterface::class),
+                new Reference(StreamFactoryInterface::class),
+                new Reference(ResponseFactoryInterface::class),
+                new Reference('workerman.reboot_strategy'),
+                new Reference('workerman.symfony_http_message_factory'),
+                new Reference('workerman.http_foundation_factory'),
+                new Reference('workerman.workerman_http_message_factory'),
+                '%workerman.response_chunk_size%',
+            ])
+        ;
+
+        $container
             ->register('workerman.task_handler', TaskHandler::class)
             ->setPublic(true)
             ->setArguments([
                 new Reference('workerman.task_locator'),
+                new Reference(EventDispatcherInterface::class),
+            ])
+        ;
+
+        $container
+            ->register('workerman.process_handler', ProcessHandler::class)
+            ->setPublic(true)
+            ->setArguments([
+                new Reference('workerman.process_locator'),
                 new Reference(EventDispatcherInterface::class),
             ])
         ;

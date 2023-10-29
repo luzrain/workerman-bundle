@@ -12,13 +12,13 @@ use Luzrain\WorkermanBundle\Command\StartCommand;
 use Luzrain\WorkermanBundle\Command\StatusCommand;
 use Luzrain\WorkermanBundle\Command\StopCommand;
 use Luzrain\WorkermanBundle\ConfigLoader;
-use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
 use Luzrain\WorkermanBundle\Http\WorkermanHttpMessageFactory;
 use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
-use Luzrain\WorkermanBundle\Scheduler\ErrorListener;
+use Luzrain\WorkermanBundle\Scheduler\TaskErrorListener;
+use Luzrain\WorkermanBundle\Supervisor\ProcessErrorListener;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -77,24 +77,18 @@ final class WorkermanExtension extends Extension
         ;
 
         $container
-            ->register('workerman.http_request_handler', HttpRequestHandler::class)
-            ->setPublic(true)
+            ->register('workerman.task_error_listener', TaskErrorListener::class)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('monolog.logger', ['channel' => 'task'])
             ->setArguments([
-                new Reference(KernelInterface::class),
-                new Reference(StreamFactoryInterface::class),
-                new Reference(ResponseFactoryInterface::class),
-                new Reference('workerman.reboot_strategy'),
-                new Reference('workerman.symfony_http_message_factory'),
-                new Reference('workerman.http_foundation_factory'),
-                new Reference('workerman.workerman_http_message_factory'),
-                '%workerman.response_chunk_size%',
+                new Reference('logger'),
             ])
         ;
 
         $container
-            ->register('workerman.task_error_listener', ErrorListener::class)
+            ->register('workerman.process_error_listener', ProcessErrorListener::class)
             ->addTag('kernel.event_subscriber')
-            ->addTag('monolog.logger', ['channel' => 'task'])
+            ->addTag('monolog.logger', ['channel' => 'process'])
             ->setArguments([
                 new Reference('logger'),
             ])
