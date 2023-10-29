@@ -8,12 +8,12 @@ final class ProcessTest extends KernelTestCase
 {
     public function testProcessIsLive(): void
     {
-        $content = $this->getJobStatusFileContent() ?? $this->fail('Process status file is not found');
+        $content = $this->getProcessStatusFileContent() ?? $this->fail('Process status file is not found');
 
         $this->assertTrue((int) $content > time() - 4, 'Process started more than 4 seconds ago');
     }
 
-    private function getJobStatusFileContent(): string|null
+    private function getProcessStatusFileContent(): string|null
     {
         $i = 0;
         do {

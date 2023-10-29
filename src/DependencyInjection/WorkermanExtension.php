@@ -94,7 +94,7 @@ final class WorkermanExtension extends Extension
         $container
             ->register('workerman.task_error_listener', ErrorListener::class)
             ->addTag('kernel.event_subscriber')
-            ->addTag('monolog.logger', ['channel' => 'job'])
+            ->addTag('monolog.logger', ['channel' => 'task'])
             ->setArguments([
                 new Reference('logger'),
             ])

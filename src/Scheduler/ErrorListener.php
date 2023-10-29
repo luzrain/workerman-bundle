@@ -23,9 +23,9 @@ final class ErrorListener implements EventSubscriberInterface
 
     public function onException(TaskErrorEvent $event): void
     {
-        $this->logger->critical('Error thrown while executing job "{job}". Message: "{message}"', [
+        $this->logger->critical('Error thrown while executing task "{task}". Message: "{message}"', [
             'exception' => $event->getError(),
-            'job' => $event->getTaskName(),
+            'task' => $event->getTaskName(),
             'message' => $event->getError()->getMessage(),
         ]);
     }

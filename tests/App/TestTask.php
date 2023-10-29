@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Test\App;
 
-use Luzrain\WorkermanBundle\Attribute\AsProcess;
+use Luzrain\WorkermanBundle\Attribute\AsTask;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsProcess(name: 'Test process')]
-final class Process
+#[AsTask(name: 'Test task', schedule: '1 second')]
+final class TestTask
 {
     public function __construct(
-        #[Autowire(value: '%kernel.project_dir%/var/process_status.log')]
+        #[Autowire(value: '%kernel.project_dir%/var/task_status.log')]
         private string $statusFile,
     ) {
     }
@@ -19,7 +19,5 @@ final class Process
     public function __invoke(): void
     {
         file_put_contents($this->statusFile, time());
-        sleep(1);
-        exit;
     }
 }

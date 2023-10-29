@@ -57,8 +57,8 @@ final class Kernel extends BaseKernel
 
             $container->autowire(ResponseTestController::class)->setAutoconfigured(true);
             $container->autowire(RequestTestController::class)->setAutoconfigured(true);
-            $container->autowire(ScheduledJob::class)->setAutoconfigured(true);
-            $container->autowire(Process::class)->setAutoconfigured(true);
+            $container->autowire(TestTask::class)->setAutoconfigured(true);
+            $container->autowire(TestProcess::class)->setAutoconfigured(true);
 
             $container->register('nyholm.psr7.psr17_factory', Psr17Factory::class);
             $container->setAlias(ServerRequestFactoryInterface::class, 'nyholm.psr7.psr17_factory');

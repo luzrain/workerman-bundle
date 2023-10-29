@@ -34,58 +34,58 @@ final class SchedulerWorker
             $this->handler = $kernel->getContainer()->get('workerman.task_handler');
 
             foreach ($schedulerConfig as $serviceId => $serviceConfig) {
-                $jobName = empty($serviceConfig['name']) ? $serviceId : $serviceConfig['name'];
+                $taskName = empty($serviceConfig['name']) ? $serviceId : $serviceConfig['name'];
 
                 if (empty($serviceConfig['schedule'])) {
-                    Worker::logWithLevel('WARNING', sprintf('[%s] Task "%s" skipped. Trigger has not been set', self::PROCESS_TITLE, $jobName));
+                    Worker::logWithLevel('WARNING', sprintf('[%s] Task "%s" skipped. Trigger has not been set', self::PROCESS_TITLE, $taskName));
                     continue;
                 }
 
                 try {
                     $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
                 } catch (\InvalidArgumentException) {
-                    Worker::logWithLevel('WARNING', sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $jobName, $serviceConfig['schedule']));
+                    Worker::logWithLevel('WARNING', sprintf('[%s] Task "%s" skipped. Trigger "%s" is incorrect', self::PROCESS_TITLE, $taskName, $serviceConfig['schedule']));
                     continue;
                 }
 
-                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $jobName, $trigger));
-                $method = $serviceConfig['method'] ?? '__invoke';
-                $this->scheduleCallback($trigger, "$serviceId::$method", $jobName);
+                Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $taskName, $trigger));
+                $method = empty($serviceConfig['method']) ? '__invoke' : $serviceConfig['method'];
+                $this->scheduleCallback($trigger, "$serviceId::$method", $taskName);
             }
         };
     }
 
-    private function scheduleCallback(TriggerInterface $trigger, string $service, string $name): void
+    private function scheduleCallback(TriggerInterface $trigger, string $service, string $taskName): void
     {
         $currentDate = new \DateTimeImmutable();
         $nextRunDate = $trigger->getNextRunDate($currentDate);
         if ($nextRunDate !== null) {
             $interval = $nextRunDate->getTimestamp() - $currentDate->getTimestamp();
-            Timer::add($interval, $this->runCallback(...), [$trigger, $service, $name], false);
+            Timer::add($interval, $this->runCallback(...), [$trigger, $service, $taskName], false);
         }
     }
 
-    private function runCallback(TriggerInterface $trigger, string $service, string $name): void
+    private function runCallback(TriggerInterface $trigger, string $service, string $taskName): void
     {
         $taskPid = Utils::getPid($this->getTaskPidPath($service));
         if ($taskPid !== 0) {
-            $this->scheduleCallback($trigger, $service, $name);
+            $this->scheduleCallback($trigger, $service, $taskName);
             return;
         }
 
         $pid = \pcntl_fork();
         if ($pid === -1) {
-            Worker::logWithLevel('ERROR', sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $name));
+            Worker::logWithLevel('ERROR', sprintf('[%s] Task "%s" call error!', self::PROCESS_TITLE, $taskName));
         } elseif ($pid > 0) {
-            Worker::log(sprintf('[%s] Task "%s" called', self::PROCESS_TITLE, $name));
-            $this->scheduleCallback($trigger, $service, $name);
+            Worker::log(sprintf('[%s] Task "%s" called', self::PROCESS_TITLE, $taskName));
+            $this->scheduleCallback($trigger, $service, $taskName);
         } else {
             // Child process start
             Timer::delAll();
-            $title = str_replace(sprintf('[%s]', self::PROCESS_TITLE), sprintf('[%s] "%s"', self::PROCESS_TITLE, $name), cli_get_process_title());
+            $title = str_replace(sprintf('[%s]', self::PROCESS_TITLE), sprintf('[%s] "%s"', self::PROCESS_TITLE, $taskName), cli_get_process_title());
             cli_set_process_title($title);
             $this->saveTaskPid($service);
-            ($this->handler)($service, $name);
+            ($this->handler)($service, $taskName);
             unlink($this->getTaskPidPath($service));
             posix_kill(posix_getpid(), SIGKILL);
         }
