@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
-use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+use Luzrain\WorkermanBundle\Attribute\AsTask;
 use Luzrain\WorkermanBundle\Command\AboutCommand;
 use Luzrain\WorkermanBundle\Command\ReloadCommand;
 use Luzrain\WorkermanBundle\Command\StartCommand;
@@ -18,6 +18,8 @@ use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Reboot\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\MaxJobsRebootStrategy;
+use Luzrain\WorkermanBundle\Scheduler\ErrorListener;
+use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -92,6 +94,15 @@ final class WorkermanExtension extends Extension
         ;
 
         $container
+            ->register('workerman.task_error_listener', ErrorListener::class)
+            ->addTag('kernel.event_subscriber')
+            ->addTag('monolog.logger', ['channel' => 'job'])
+            ->setArguments([
+                new Reference('logger'),
+            ])
+        ;
+
+        $container
             ->register('workerman.kernel_runner', KernelRunner::class)
             ->setArguments([new Reference(KernelInterface::class)])
         ;
@@ -99,9 +110,10 @@ final class WorkermanExtension extends Extension
         $container
             ->register('workerman.command.start', StartCommand::class)
             ->addTag('console.command')
+            ->addTag('monolog.logger', ['channel' => 'workerman'])
             ->setArguments([
                 new Reference('workerman.kernel_runner'),
-                new Reference(LoggerInterface::class),
+                new Reference('logger'),
                 $config['pid_file'],
             ])
         ;
@@ -138,7 +150,7 @@ final class WorkermanExtension extends Extension
         ;
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
-        $container->registerAttributeForAutoconfiguration(AsScheduledJob::class, $this->scheduledJobConfig(...));
+        $container->registerAttributeForAutoconfiguration(AsTask::class, $this->taskConfig(...));
 
         if ($config['reload_strategy']['always']['active']) {
             $container
@@ -174,7 +186,7 @@ final class WorkermanExtension extends Extension
         }
     }
 
-    private function processConfig(ChildDefinition $definition, AsProcess $attribute, \ReflectionClass $refl): void
+    private function processConfig(ChildDefinition $definition, AsProcess $attribute): void
     {
         $definition->addTag('workerman.process', [
             'name' => $attribute->name,
@@ -183,9 +195,9 @@ final class WorkermanExtension extends Extension
         ]);
     }
 
-    private function scheduledJobConfig(ChildDefinition $definition, AsScheduledJob $attribute, \ReflectionClass $refl): void
+    private function taskConfig(ChildDefinition $definition, AsTask $attribute): void
     {
-        $definition->addTag('workerman.job', [
+        $definition->addTag('workerman.task', [
             'name' => $attribute->name,
             'schedule' => $attribute->schedule,
             'method' => $attribute->method,

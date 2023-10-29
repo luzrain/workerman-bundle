@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Scheduler;
+namespace Luzrain\WorkermanBundle\Scheduler\Trigger;
 
 final class TriggerFactory
 {
@@ -22,6 +22,8 @@ final class TriggerFactory
      * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      * @see https://www.php.net/manual/en/dateinterval.createfromdatestring.php
      * @see https://github.com/dragonmantank/cron-expression
+     *
+     * @throws \InvalidArgumentException
      */
     public static function create(string|int|\DateInterval|\DateTimeImmutable $expression, int $jitter = 0): TriggerInterface
     {

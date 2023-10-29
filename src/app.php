@@ -15,7 +15,7 @@ $runtime = new \Luzrain\WorkermanBundle\Runtime([
     'project_dir' => $_SERVER['WORKERMAN_PROJECT_DIR'],
     'env' => $_SERVER['WORKERMAN_APP_ENV'],
     'debug' => $_SERVER['WORKERMAN_APP_DEBUG'],
-    'extended_interface' => true,
+    'extended_ui' => true,
 ]);
 
 $kernel = $_SERVER['WORKERMAN_KERNEL_CLASS'];

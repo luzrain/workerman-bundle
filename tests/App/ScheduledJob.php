@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Test\App;
 
-use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+use Luzrain\WorkermanBundle\Attribute\AsTask;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-#[AsScheduledJob(name: 'Test job', schedule: '1 second')]
+#[AsTask(name: 'Test job', schedule: '1 second')]
 final class ScheduledJob
 {
     public function __construct(

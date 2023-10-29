@@ -114,17 +114,17 @@ Schedule string can be formatted in several ways:
 ```php
 <?php
 
-use Luzrain\WorkermanBundle\Attribute\AsScheduledJob;
+use Luzrain\WorkermanBundle\Attribute\AsTask;
 
 /**
  * Attribute parameters
- * name: Job name
- * schedule: Job schedule in any format
+ * name: Task name
+ * schedule: Task schedule in any format
  * method: method to call, __invoke by default
- * jitter: Maximum jitter in seconds that adds a random time offset to the schedule. Use to prevent multiple jobs from running at the same time
+ * jitter: Maximum jitter in seconds that adds a random time offset to the schedule. Use to prevent multiple tasks from running at the same time
  */
-#[AsScheduledJob(name: 'My scheduled job', schedule: '1 minutes')]
-final class JobService
+#[AsTask(name: 'My scheduled task', schedule: '1 minutes')]
+final class TaskService
 {
     public function __invoke()
     {
@@ -137,9 +137,9 @@ final class JobService
 # config/services.yaml
 
 services:
-  App\JobService:
+  App\TaskService:
     tags:
-      - { name: 'workerman.job', schedule: '1 minutes' }
+      - { name: '', schedule: '1 minutes' }
 ```
 
 ## Supervisor

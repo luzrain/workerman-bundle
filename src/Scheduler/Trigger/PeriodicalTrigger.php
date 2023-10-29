@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Scheduler;
+namespace Luzrain\WorkermanBundle\Scheduler\Trigger;
 
 final class PeriodicalTrigger implements TriggerInterface
 {

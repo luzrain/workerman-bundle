@@ -5,23 +5,27 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
+use Luzrain\WorkermanBundle\Scheduler\ErrorListener;
+use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 final class CompilerPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
         $processes = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.process'));
-        $jobs = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.job'));
+        $tasks = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.task'));
         $rebootStrategies = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.reboot_strategy'));
 
         $container
             ->getDefinition('workerman.config_loader')
             ->addMethodCall('setProcessConfig', [$processes])
-            ->addMethodCall('setSchedulerConfig', [$jobs])
+            ->addMethodCall('setSchedulerConfig', [$tasks])
         ;
 
         $container
@@ -32,15 +36,24 @@ final class CompilerPass implements CompilerPassInterface
         ;
 
         $container
-            ->register('workerman.scheduledjob_locator', ServiceLocator::class)
+            ->register('workerman.task_locator', ServiceLocator::class)
             ->addTag('container.service_locator')
-            ->setArguments([$this->referenceMap($jobs)])
+            ->setArguments([$this->referenceMap($tasks)])
             ->setPublic(true)
         ;
 
         $container
             ->register('workerman.reboot_strategy', StackRebootStrategy::class)
             ->setArguments([$this->referenceMap($rebootStrategies)])
+        ;
+
+        $container
+            ->register('workerman.task_handler', TaskHandler::class)
+            ->setPublic(true)
+            ->setArguments([
+                new Reference('workerman.task_locator'),
+                new Reference(EventDispatcherInterface::class),
+            ])
         ;
     }
 
