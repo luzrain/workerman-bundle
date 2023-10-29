@@ -22,7 +22,7 @@ final class KernelRunner
     public function __construct(KernelInterface $kernel)
     {
         $refl = new \ReflectionClass(self::class);
-        $this->entryPointPath = dirname($refl->getFileName()) . DIRECTORY_SEPARATOR  . self::ENTRYPOINT;
+        $this->entryPointPath = dirname($refl->getFileName()) . DIRECTORY_SEPARATOR . self::ENTRYPOINT;
         $this->projectDir = $kernel->getProjectDir();
         $this->kernelClass = $kernel::class;
         $this->env = $kernel->getEnvironment();

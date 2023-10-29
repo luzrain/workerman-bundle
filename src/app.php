@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 if (!isset(
     $_SERVER['WORKERMAN_PROJECT_DIR'],
     $_SERVER['WORKERMAN_KERNEL_CLASS'],
@@ -19,7 +21,7 @@ $runtime = new \Luzrain\WorkermanBundle\Runtime([
 ]);
 
 $kernel = $_SERVER['WORKERMAN_KERNEL_CLASS'];
-$app = fn (array $context) => new $kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+$app = fn(array $context) => new $kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
 [$app, $args] = $runtime->getResolver($app)->resolve();
 $runner = $runtime->getRunner($app(...$args));
 

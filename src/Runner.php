@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle;
 
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\Worker\FileMonitorWorker;
 use Luzrain\WorkermanBundle\Worker\SchedulerWorker;
 use Luzrain\WorkermanBundle\Worker\ServerWorker;
 use Luzrain\WorkermanBundle\Worker\SupervisorWorker;
 use Symfony\Component\Runtime\RunnerInterface;
 use Workerman\Connection\TcpConnection;
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class Runner implements RunnerInterface
 {

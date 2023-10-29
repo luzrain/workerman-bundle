@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
+use Luzrain\WorkermanBundle\KernelFactory;
 
 final class SupervisorWorker
 {

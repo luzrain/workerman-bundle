@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
-use Luzrain\WorkermanBundle\Scheduler\ErrorListener;
 use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;

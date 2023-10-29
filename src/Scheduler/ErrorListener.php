@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Luzrain\WorkermanBundle\Scheduler;
 
 use Luzrain\WorkermanBundle\Events\TaskErrorEvent;
