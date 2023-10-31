@@ -50,7 +50,7 @@ final class ServerWorker
             Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $serverConfig['name']));
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();
-            $worker->onMessage = $kernel->getContainer()->get($serverConfig['handler']);
+            $worker->onMessage = $kernel->getContainer()->get('workerman.http_request_handler');
         };
     }
 }

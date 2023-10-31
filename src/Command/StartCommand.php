@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Command;
 
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Utils;
 use Psr\Log\LoggerInterface;
@@ -13,7 +14,6 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class StartCommand extends Command implements SignalableCommandInterface
 {
