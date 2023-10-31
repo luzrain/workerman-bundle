@@ -77,4 +77,9 @@ final class ExtendedWorker extends Worker
         \pcntl_signal(\SIGIO, $signalHandler, false);
         \pcntl_signal(\SIGPIPE, \SIG_IGN, false);
     }
+
+    public static function checkMasterIsAlive($master_pid): bool
+    {
+        return parent::checkMasterIsAlive($master_pid);
+    }
 }
