@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Http\HttpRequestHandler;
-use Luzrain\WorkermanBundle\Reboot\StackRebootStrategy;
+use Luzrain\WorkermanBundle\Reboot\Strategy\StackRebootStrategy;
 use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
 use Luzrain\WorkermanBundle\Supervisor\ProcessHandler;
 use Psr\Http\Message\ResponseFactoryInterface;
