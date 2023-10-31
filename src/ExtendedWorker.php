@@ -17,9 +17,13 @@ final class ExtendedWorker extends Worker
             return;
         }
 
-        $data = [];
+        $data = [
+            'version' => self::VERSION,
+            'eventLoop' => static::getEventLoopName(),
+            'workers' => [],
+        ];
         foreach (static::$_workers as $worker) {
-            $data[] = [
+            $data['workers'][] = [
                 'user' => $worker->user,
                 'worker' => $worker->name,
                 'socket' => $worker->parseSocketAddress() ?? '-',
