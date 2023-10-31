@@ -6,7 +6,6 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Attribute\AsTask;
-use Luzrain\WorkermanBundle\Command\AboutCommand;
 use Luzrain\WorkermanBundle\Command\ReloadCommand;
 use Luzrain\WorkermanBundle\Command\StartCommand;
 use Luzrain\WorkermanBundle\Command\StatusCommand;
@@ -134,11 +133,6 @@ final class WorkermanExtension extends Extension
             ->setArguments([
                 $config['pid_file'],
             ])
-        ;
-
-        $container
-            ->register('workerman.command.about', AboutCommand::class)
-            ->addTag('console.command')
         ;
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));

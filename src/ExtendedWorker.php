@@ -17,9 +17,13 @@ final class ExtendedWorker extends Worker
             return;
         }
 
-        $data = [];
+        $data = [
+            'version' => self::VERSION,
+            'eventLoop' => self::getEventLoopName(),
+            'workers' => [],
+        ];
         foreach (self::getAllWorkers() as $worker) {
-            $data[] = [
+            $data['workers'][] = [
                 'user' => $worker->user,
                 'worker' => $worker->name,
                 'socket' => $worker->parseSocketAddress() ?? '-',
@@ -54,9 +58,9 @@ final class ExtendedWorker extends Worker
         parent::log("LOG:$level:" . serialize($msg));
     }
 
-    public static function getEventLoopClass(): string
+    public static function checkMasterIsAlive($master_pid): bool
     {
-        return parent::getEventLoopName();
+        return parent::checkMasterIsAlive($master_pid);
     }
 
     public static function checkMasterIsAlive($master_pid): bool

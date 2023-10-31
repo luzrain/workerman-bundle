@@ -43,7 +43,7 @@ final class ReloadCommand extends Command implements SignalableCommandInterface
     {
         $pid = Utils::getPid($this->pidFile);
 
-        if (Worker::checkMasterIsAlive($pid)) {
+        if (!Worker::checkMasterIsAlive($pid)) {
             $output->writeln('Workerman server is not running');
             return self::FAILURE;
         }

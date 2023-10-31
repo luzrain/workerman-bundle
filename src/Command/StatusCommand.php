@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Command;
 
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Utils;
 use Symfony\Component\Console\Command\Command;
@@ -44,23 +45,17 @@ final class StatusCommand extends Command implements SignalableCommandInterface
     {
         $pid = Utils::getPid($this->pidFile);
 
-        if ($pid === 0) {
+        if (!Worker::checkMasterIsAlive($pid)) {
             $output->writeln('Workerman server is not running');
-
             return self::FAILURE;
         }
 
-        $this->kernelRunner->runStatus();
+        throw new \Exception('Not implemented yet');
 
-        $firstlineRemove = true;
-        foreach ($this->kernelRunner->readOutput() as $line) {
-            if ($firstlineRemove) {
-                $firstlineRemove = false;
-                continue;
-            }
-
-            $output->writeln($line);
-        }
+        //        $this->kernelRunner->runStatus();
+        //        foreach ($this->kernelRunner->readOutput() as $line) {
+        //            $output->writeln($line);
+        //        }
 
         return self::SUCCESS;
     }
