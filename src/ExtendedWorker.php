@@ -19,10 +19,10 @@ final class ExtendedWorker extends Worker
 
         $data = [
             'version' => self::VERSION,
-            'eventLoop' => static::getEventLoopName(),
+            'eventLoop' => self::getEventLoopName(),
             'workers' => [],
         ];
-        foreach (static::$_workers as $worker) {
+        foreach (self::$_workers as $worker) {
             $data['workers'][] = [
                 'user' => $worker->user,
                 'worker' => $worker->name,
@@ -58,18 +58,18 @@ final class ExtendedWorker extends Worker
         parent::log("LOG:$level:" . serialize($msg));
     }
 
-    public static function getEventLoopClass(): string
+    public static function checkMasterIsAlive($master_pid): bool
     {
-        return parent::getEventLoopName();
+        return parent::checkMasterIsAlive($master_pid);
     }
 
     // @TODO Remove in v5
     protected static function installSignal(): void
     {
-        if (static::$_OS !== \OS_TYPE_LINUX) {
+        if (self::$_OS !== \OS_TYPE_LINUX) {
             return;
         }
-        $signalHandler = static::signalHandler(...);
+        $signalHandler = self::signalHandler(...);
         \pcntl_signal(\SIGINT, $signalHandler, false);
         \pcntl_signal(\SIGTERM, $signalHandler, false);
         \pcntl_signal(\SIGHUP, $signalHandler, false);
@@ -80,10 +80,5 @@ final class ExtendedWorker extends Worker
         \pcntl_signal(\SIGIOT, $signalHandler, false);
         \pcntl_signal(\SIGIO, $signalHandler, false);
         \pcntl_signal(\SIGPIPE, \SIG_IGN, false);
-    }
-
-    public static function checkMasterIsAlive($master_pid): bool
-    {
-        return parent::checkMasterIsAlive($master_pid);
     }
 }
