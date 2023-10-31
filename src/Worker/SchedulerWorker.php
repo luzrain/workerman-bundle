@@ -50,7 +50,9 @@ final class SchedulerWorker
 
                 Worker::log(sprintf('[%s] Task "%s" scheduled. Trigger: "%s"', self::PROCESS_TITLE, $taskName, $trigger));
                 $method = empty($serviceConfig['method']) ? '__invoke' : $serviceConfig['method'];
-                $this->scheduleCallback($trigger, "$serviceId::$method", $taskName);
+                $service = "$serviceId::$method";
+                $this->deleteTaskPid($service);
+                $this->scheduleCallback($trigger, $service, $taskName);
             }
         };
     }
@@ -86,7 +88,7 @@ final class SchedulerWorker
             cli_set_process_title($title);
             $this->saveTaskPid($service);
             ($this->handler)($service, $taskName);
-            unlink($this->getTaskPidPath($service));
+            $this->deleteTaskPid($service);
             posix_kill(posix_getpid(), SIGKILL);
         }
     }
@@ -96,10 +98,17 @@ final class SchedulerWorker
         return sprintf('%s/workerman.task.%s.pid', dirname(Worker::$pidFile), hash('xxh64', $serviceId));
     }
 
-    private function saveTaskPid(string $serviceId): void
+    private function saveTaskPid(string $service): void
     {
-        if (file_put_contents($this->getTaskPidPath($serviceId), posix_getpid()) === false) {
-            Worker::logWithLevel('ERROR', sprintf('[%s] Can\'t save pid to %s', self::PROCESS_TITLE, $this->getTaskPidPath($serviceId)));
+        $pidFile = $this->getTaskPidPath($service);
+        if (file_put_contents($pidFile, posix_getpid()) === false) {
+            Worker::logWithLevel('ERROR', sprintf('[%s] Can\'t save pid to %s', self::PROCESS_TITLE, $pidFile));
         }
+    }
+
+    private function deleteTaskPid(string $service): void
+    {
+        $pidFile = $this->getTaskPidPath($service);
+        is_file($pidFile) && unlink($pidFile);
     }
 }

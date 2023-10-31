@@ -58,4 +58,9 @@ final class ExtendedWorker extends Worker
     {
         return parent::getEventLoopName();
     }
+
+    public static function checkMasterIsAlive($master_pid): bool
+    {
+        return parent::checkMasterIsAlive($master_pid);
+    }
 }

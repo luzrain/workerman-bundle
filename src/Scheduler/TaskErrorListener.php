@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Scheduler;
 
-use Luzrain\WorkermanBundle\Events\TaskErrorEvent;
+use Luzrain\WorkermanBundle\Event\TaskErrorEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

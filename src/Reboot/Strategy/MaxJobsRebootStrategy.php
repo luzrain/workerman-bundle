@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Luzrain\WorkermanBundle\Reboot;
+namespace Luzrain\WorkermanBundle\Reboot\Strategy;
 
 final class MaxJobsRebootStrategy implements RebootStrategyInterface
 {

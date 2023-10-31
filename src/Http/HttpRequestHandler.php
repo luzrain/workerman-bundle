@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Luzrain\WorkermanBundle\Http;
 
 use League\MimeTypeDetection\FinfoMimeTypeDetector;
-use Luzrain\WorkermanBundle\Reboot\RebootStrategyInterface;
+use Luzrain\WorkermanBundle\Reboot\Strategy\RebootStrategyInterface;
 use Luzrain\WorkermanBundle\Utils;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;

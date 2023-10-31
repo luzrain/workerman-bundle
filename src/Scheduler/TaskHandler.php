@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Scheduler;
 
-use Luzrain\WorkermanBundle\Events\TaskErrorEvent;
-use Luzrain\WorkermanBundle\Events\TaskStartEvent;
+use Luzrain\WorkermanBundle\Event\TaskErrorEvent;
+use Luzrain\WorkermanBundle\Event\TaskStartEvent;
 use Psr\Container\ContainerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 

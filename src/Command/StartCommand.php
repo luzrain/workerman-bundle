@@ -13,6 +13,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 
 final class StartCommand extends Command implements SignalableCommandInterface
 {
@@ -58,7 +59,7 @@ final class StartCommand extends Command implements SignalableCommandInterface
     {
         $pid = Utils::getPid($this->pidFile);
 
-        if ($pid !== 0) {
+        if (Worker::checkMasterIsAlive($pid)) {
             $output->writeln('Workerman server already running');
             return self::FAILURE;
         }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Supervisor;
 
-use Luzrain\WorkermanBundle\Events\ProcessErrorEvent;
-use Luzrain\WorkermanBundle\Events\ProcessStartEvent;
+use Luzrain\WorkermanBundle\Event\ProcessErrorEvent;
+use Luzrain\WorkermanBundle\Event\ProcessStartEvent;
 use Psr\Container\ContainerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 

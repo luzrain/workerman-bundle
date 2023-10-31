@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Command;
 
+use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Utils;
 use Symfony\Component\Console\Command\Command;
@@ -44,9 +45,8 @@ final class StopCommand extends Command implements SignalableCommandInterface
     {
         $pid = Utils::getPid($this->pidFile);
 
-        if ($pid === 0) {
+        if (Worker::checkMasterIsAlive($pid)) {
             $output->writeln('Workerman server is not running');
-
             return self::FAILURE;
         }
 
