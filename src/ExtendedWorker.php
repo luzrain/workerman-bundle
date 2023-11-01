@@ -8,11 +8,11 @@ use Workerman\Worker;
 
 final class ExtendedWorker extends Worker
 {
-    public static bool $extendedInterface = false;
+    public static bool $extendedUi = false;
 
     protected static function displayUI(): void
     {
-        if (!self::$extendedInterface) {
+        if (!self::$extendedUi) {
             parent::displayUI();
             return;
         }
@@ -22,6 +22,7 @@ final class ExtendedWorker extends Worker
             'eventLoop' => self::getEventLoopName(),
             'workers' => [],
         ];
+
         foreach (self::$_workers as $worker) {
             $data['workers'][] = [
                 'user' => $worker->user,
@@ -34,28 +35,19 @@ final class ExtendedWorker extends Worker
         parent::safeEcho('HEADER:' . serialize($data) . "\n");
     }
 
-    public static function log(mixed $msg): void
+    public function doLog(mixed $msg, string $level = 'INFO'): void
     {
-        if (!self::$extendedInterface) {
-            parent::log($msg);
+        if (!self::$extendedUi) {
+            parent::log($this->name . ' ' . $msg);
             return;
         }
 
         if ($msg instanceof \Throwable) {
-            self::logWithLevel('EMERGENCY', $msg->getMessage());
-        } else {
-            self::logWithLevel('INFO', $msg);
-        }
-    }
-
-    public static function logWithLevel(string $level, mixed $msg): void
-    {
-        if (!self::$extendedInterface) {
-            parent::log($msg);
-            return;
+            $msg = $msg->getMessage();
+            $level = 'EMERGENCY';
         }
 
-        parent::log("LOG:$level:" . serialize($msg));
+        parent::safeEcho("LOG:$level:" . serialize($this->name . ' ' . $msg) . "\n");
     }
 
     public static function checkMasterIsAlive($master_pid): bool

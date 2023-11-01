@@ -9,7 +9,7 @@ use Workerman\Timer;
 final class PollingMonitorWatcher extends FileMonitorWatcher
 {
     private const POLLING_INTERVAL = 1;
-    private const TO_MANY_FILES_WARNING_LIMIT = 1000;
+    private const TO_MANY_FILES_WARNING_LIMIT = 2;
 
     private int $lastMTime;
     private bool $toManyFiles = false;
@@ -18,14 +18,14 @@ final class PollingMonitorWatcher extends FileMonitorWatcher
     {
         $this->lastMTime = time();
         Timer::add(self::POLLING_INTERVAL, $this->checkFileSystemChanges(...));
-        $this->log('Polling file monitoring can be inefficient if the project has many files. Install the php-inotify extension to increase performance.');
+        $this->worker->doLog('Polling file monitoring can be inefficient if the project has many files. Install the php-inotify extension to increase performance.', 'NOTICE');
     }
 
     private function checkFileSystemChanges(): void
     {
         $filesCout = 0;
 
-        foreach ($this->getSourceDir() as $dir) {
+        foreach ($this->sourceDir as $dir) {
             $dirIterator = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
             $iterator = new \RecursiveIteratorIterator($dirIterator, \RecursiveIteratorIterator::SELF_FIRST);
 
@@ -37,7 +37,7 @@ final class PollingMonitorWatcher extends FileMonitorWatcher
 
                 if (!$this->toManyFiles && ++$filesCout > self::TO_MANY_FILES_WARNING_LIMIT) {
                     $this->toManyFiles = true;
-                    $this->log('There are too many files. This makes file monitoring very slow. Install php-inotify extension to increase performance.');
+                    $this->worker->doLog('There are too many files. This makes file monitoring very slow. Install php-inotify extension to increase performance.', 'WARNING');
                 }
 
                 if (!$this->checkPattern($file->getFilename())) {
