@@ -11,6 +11,7 @@ use Workerman\Timer;
 final class InotifyMonitorWatcher extends FileMonitorWatcher
 {
     private const REBOOT_DELAY = 0.33;
+
     private mixed $fd;
     private array $pathByWd = [];
     private \Closure|null $rebootCallback = null;
@@ -20,7 +21,7 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
         $this->fd = \inotify_init();
         stream_set_blocking($this->fd, false);
 
-        foreach ($this->getSourceDir() as $dir) {
+        foreach ($this->sourceDir as $dir) {
             $dirIterator = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
             $iterator = new \RecursiveIteratorIterator($dirIterator, \RecursiveIteratorIterator::SELF_FIRST);
 
@@ -34,7 +35,7 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
             }
         }
 
-        Worker::$globalEvent->add($this->fd, EventInterface::EV_READ, $this->onNotify(...));
+        $this->worker::$globalEvent->onReadable($this->fd, $this->onNotify(...));
     }
 
     private function onNotify(mixed $inotifyFd): void
@@ -65,7 +66,7 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
                 $this->reboot();
             };
 
-            Timer::add(self::REBOOT_DELAY, $this->rebootCallback, [], false);
+            $this->worker::$globalEvent->delay(self::REBOOT_DELAY, $this->rebootCallback);
 
             return;
         }
