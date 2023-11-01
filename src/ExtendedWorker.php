@@ -50,13 +50,8 @@ final class ExtendedWorker extends Worker
         parent::safeEcho("LOG:$level:" . serialize($this->name . ' ' . $msg) . "\n");
     }
 
-    public static function checkMasterIsAlive($master_pid): bool
+    public static function checkMasterIsAlive(int $masterPid): bool
     {
-        return parent::checkMasterIsAlive($master_pid);
-    }
-
-    public static function checkMasterIsAlive($master_pid): bool
-    {
-        return parent::checkMasterIsAlive($master_pid);
+        return parent::checkMasterIsAlive($masterPid);
     }
 }
