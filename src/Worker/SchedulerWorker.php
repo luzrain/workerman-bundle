@@ -10,7 +10,6 @@ use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
 use Luzrain\WorkermanBundle\Scheduler\Trigger\TriggerFactory;
 use Luzrain\WorkermanBundle\Scheduler\Trigger\TriggerInterface;
 use Luzrain\WorkermanBundle\Utils;
-use Workerman\Timer;
 
 final class SchedulerWorker
 {
@@ -64,7 +63,7 @@ final class SchedulerWorker
         $nextRunDate = $trigger->getNextRunDate($currentDate);
         if ($nextRunDate !== null) {
             $interval = $nextRunDate->getTimestamp() - $currentDate->getTimestamp();
-            Timer::add($interval, $this->runCallback(...), [$trigger, $service, $taskName], false);
+            $this->worker::$globalEvent->delay($interval, $this->runCallback(...), [$trigger, $service, $taskName]);
         }
     }
 
@@ -84,7 +83,7 @@ final class SchedulerWorker
             $this->scheduleCallback($trigger, $service, $taskName);
         } else {
             // Child process start
-            Timer::delAll();
+            $this->worker::$globalEvent->deleteAllTimer();
             $title = str_replace(self::PROCESS_TITLE, sprintf('%s "%s"', self::PROCESS_TITLE, $taskName), cli_get_process_title());
             cli_set_process_title($title);
             $this->saveTaskPid($service);

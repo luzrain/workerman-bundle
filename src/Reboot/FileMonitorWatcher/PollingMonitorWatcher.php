@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
 
-use Workerman\Timer;
-
 final class PollingMonitorWatcher extends FileMonitorWatcher
 {
     private const POLLING_INTERVAL = 1;

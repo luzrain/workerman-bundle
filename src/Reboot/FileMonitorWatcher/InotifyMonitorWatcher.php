@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
 
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
-use Workerman\Events\EventInterface;
-use Workerman\Timer;
-
 final class InotifyMonitorWatcher extends FileMonitorWatcher
 {
     private const REBOOT_DELAY = 0.33;
