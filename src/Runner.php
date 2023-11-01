@@ -48,7 +48,7 @@ final class Runner implements RunnerInterface
         }
 
         TcpConnection::$defaultMaxPackageSize = $config['max_package_size'];
-        Worker::$extendedInterface = $this->extendedInterface;
+        Worker::$extendedUi = $this->extendedInterface;
         Worker::$pidFile = $config['pid_file'];
         Worker::$logFile = $config['log_file'];
         Worker::$stdoutFile = $config['stdout_file'];

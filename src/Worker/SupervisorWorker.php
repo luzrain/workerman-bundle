@@ -10,7 +10,7 @@ use Luzrain\WorkermanBundle\Supervisor\ProcessHandler;
 
 final class SupervisorWorker
 {
-    private const PROCESS_TITLE = 'Process';
+    private const PROCESS_TITLE = '[Process]';
 
     public function __construct(KernelFactory $kernelFactory, string|null $user, string|null $group, array $processConfig)
     {
@@ -20,14 +20,13 @@ final class SupervisorWorker
             }
 
             $taskName = empty($serviceConfig['name']) ? $serviceId : $serviceConfig['name'];
-
             $worker = new Worker();
-            $worker->name = sprintf('[%s] "%s"', self::PROCESS_TITLE, $serviceConfig['name'] ?? $serviceId);
+            $worker->name = self::PROCESS_TITLE;
             $worker->user = $user ?? '';
             $worker->group = $group ?? '';
             $worker->count = $serviceConfig['processes'] ?? 1;
             $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $serviceId, $serviceConfig, $taskName) {
-                Worker::log(sprintf('[%s] "%s" started', self::PROCESS_TITLE, $taskName));
+                $worker->doLog(sprintf('"%s" started', $taskName));
                 $kernel = $kernelFactory->createKernel();
                 $kernel->boot();
                 /** @var ProcessHandler $handler */

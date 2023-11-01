@@ -9,7 +9,7 @@ use Workerman\Timer;
 final class PollingMonitorWatcher extends FileMonitorWatcher
 {
     private const POLLING_INTERVAL = 1;
-    private const TO_MANY_FILES_WARNING_LIMIT = 1000;
+    private const TO_MANY_FILES_WARNING_LIMIT = 2;
 
     private int $lastMTime;
     private bool $toManyFiles = false;
@@ -18,7 +18,7 @@ final class PollingMonitorWatcher extends FileMonitorWatcher
     {
         $this->lastMTime = time();
         $this->worker::$globalEvent->repeat(self::POLLING_INTERVAL, $this->checkFileSystemChanges(...));
-        $this->log('Polling file monitoring can be inefficient if the project has many files. Install the php-inotify extension to increase performance.');
+        $this->worker->doLog('Polling file monitoring can be inefficient if the project has many files. Install the php-inotify extension to increase performance.', 'NOTICE');
     }
 
     private function checkFileSystemChanges(): void
