@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 final class KernelRunner
 {
-    public const ENTRYPOINT = 'app.php';
+    private const ENTRYPOINT = 'app.php';
 
     private string $entryPointPath;
     private string $projectDir;
