@@ -34,6 +34,9 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
         $this->worker::$globalEvent->onReadable($this->fd, $this->onNotify(...));
     }
 
+    /**
+     * @param resource $inotifyFd
+     */
     private function onNotify(mixed $inotifyFd): void
     {
         $events = \inotify_read($inotifyFd) ?: [];
