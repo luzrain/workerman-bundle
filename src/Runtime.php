@@ -13,7 +13,11 @@ class Runtime extends SymfonyRuntime
     public function getRunner(object|null $application): RunnerInterface
     {
         if ($application instanceof KernelFactory) {
-            return new Runner($application, $this->options['extended_ui'] ?? false);
+            $command = $this->options['command'] ?? '';
+            $extendedUi = $this->options['extended_ui'] ?? false;
+            $stream = $this->options['stream'] ?? null;
+
+            return new Runner($application, $extendedUi, $command, $stream);
         }
 
         return parent::getRunner($application);

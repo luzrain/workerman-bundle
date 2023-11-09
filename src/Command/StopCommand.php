@@ -10,6 +10,7 @@ use Luzrain\WorkermanBundle\Utils;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class StopCommand extends Command implements SignalableCommandInterface
@@ -43,19 +44,22 @@ final class StopCommand extends Command implements SignalableCommandInterface
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $pid = Utils::getPid($this->pidFile);
+        /** @var ConsoleOutput $output */
 
-        if (!Worker::checkMasterIsAlive($pid)) {
-            $output->writeln('Workerman server is not running');
-            return self::FAILURE;
-        }
+//        $pid = Utils::getPid($this->pidFile);
+//
+//        if (!Worker::checkMasterIsAlive($pid)) {
+//            $output->writeln('Workerman server is not running');
+//            return self::FAILURE;
+//        }
+//
+//        $output->writeln('Workerman server is stopping...');
 
-        $output->writeln('Workerman server is stopping...');
+        $this->kernelRunner
+            ->setOutputStream($output->getStream())
+            ->stop();
 
-        $this->kernelRunner->runStop();
-        $this->kernelRunner->wait();
-
-        $output->writeln('Workerman server stop success');
+        //$output->writeln('Workerman server stop success');
 
         return self::SUCCESS;
     }

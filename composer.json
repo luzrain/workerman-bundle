@@ -46,7 +46,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Luzrain\\WorkermanBundle\\Test\\": "tests"
+            "Luzrain\\WorkermanBundle\\Test\\": "tests/"
         }
     },
     "config": {

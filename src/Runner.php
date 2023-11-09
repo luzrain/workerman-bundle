@@ -16,7 +16,9 @@ final class Runner implements RunnerInterface
 {
     public function __construct(
         private KernelFactory $kernelFactory,
-        private bool $extendedInterface,
+        private bool $extendedInterface = false,
+        private string $command = '',
+        private mixed $stream = null,
     ) {
     }
 
@@ -54,6 +56,15 @@ final class Runner implements RunnerInterface
         Worker::$stdoutFile = $config['stdout_file'];
         Worker::$stopTimeout = $config['stop_timeout'];
         Worker::$onMasterReload = Utils::clearOpcache(...);
+        Worker::$command = $this->command;
+        //Worker::$eventLoopClass = \Workerman\Events\Evv::class;
+
+
+
+        //Worker::$outputStream = $this->stream;
+        //Worker::$stdoutFile = '/tmp/stdout.log';
+        //Worker::$outputStream = fopen('/tmp/out.log', 'w');
+
 
         foreach ($config['servers'] as $serverConfig) {
             new ServerWorker(
