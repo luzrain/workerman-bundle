@@ -23,7 +23,7 @@
         "symfony/console": "^6.4|^7.0",
         "symfony/dependency-injection": "^6.4|^7.0",
         "symfony/http-kernel": "^6.4|^7.0",
-        "symfony/psr-http-message-bridge": "^2.3",
+        "symfony/psr-http-message-bridge": "^6.4|^7.0",
         "symfony/runtime": "^6.4|^7.0",
         "workerman/workerman": "^4.1"
     },
