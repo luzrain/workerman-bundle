@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Luzrain\WorkermanBundle\Test;
+
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Psr7\MultipartStream;
