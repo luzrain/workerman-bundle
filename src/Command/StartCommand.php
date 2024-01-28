@@ -45,7 +45,7 @@ final class StartCommand extends Command implements SignalableCommandInterface
         return [SIGINT, SIGTERM];
     }
 
-    public function handleSignal(int|false $previousExitCode): int|false
+    public function handleSignal(int $signal, int|false $previousExitCode = 0): int|false
     {
         if ($previousExitCode === SIGTERM) {
             posix_kill(Utils::getPid($this->pidFile), SIGTERM);

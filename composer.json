@@ -19,12 +19,12 @@
         "psr/http-factory": "^1.0",
         "psr/http-message": "^2.0",
         "psr/log": "^3.0",
-        "symfony/config": "^6.3",
-        "symfony/console": "^6.3",
-        "symfony/dependency-injection": "^6.3",
-        "symfony/http-kernel": "^6.3",
+        "symfony/config": "^6.4|^7.0",
+        "symfony/console": "^6.4|^7.0",
+        "symfony/dependency-injection": "^6.4|^7.0",
+        "symfony/http-kernel": "^6.4|^7.0",
         "symfony/psr-http-message-bridge": "^2.3",
-        "symfony/runtime": "^6.3",
+        "symfony/runtime": "^6.4|^7.0",
         "workerman/workerman": "^4.1"
     },
     "require-dev": {
@@ -32,7 +32,7 @@
         "guzzlehttp/guzzle": "^7.8",
         "nyholm/psr7": "^1.8",
         "phpunit/phpunit": "^10.4",
-        "symfony/framework-bundle": "^6.3"
+        "symfony/framework-bundle": "^7.0"
     },
     "suggest": {
         "ext-event": "For better performance",
