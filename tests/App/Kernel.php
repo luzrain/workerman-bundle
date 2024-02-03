@@ -70,6 +70,6 @@ final class Kernel extends BaseKernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import('*.php', 'annotation');
+        $routes->import('*.php', 'attribute');
     }
 }

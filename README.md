@@ -1,6 +1,6 @@
 # Workerman runtime for symfony applications
 ![PHP ^8.1](https://img.shields.io/badge/PHP-^8.1-777bb3.svg?style=flat)
-![Symfony ^6.3](https://img.shields.io/badge/Symfony-^6.3-374151.svg?style=flat)
+![Symfony ^6.4|^7.0](https://img.shields.io/badge/Symfony-^6.4|^7.0-374151.svg?style=flat)
 [![Tests Status](https://img.shields.io/github/actions/workflow/status/luzrain/workerman-bundle/tests.yaml?branch=master)](../../actions/workflows/tests.yaml)
 
 [Workerman](https://github.com/walkor/workerman) is a high-performance, asynchronous event-driven PHP framework written in pure PHP.  

@@ -26,7 +26,7 @@ final class ConfigLoader implements CacheWarmerInterface
         return false;
     }
 
-    public function warmUp(string $cacheDir): array
+    public function warmUp(string $cacheDir, string $buildDir = null): array
     {
         $resources = is_file($this->yamlConfigFilePath) ? [new FileResource($this->yamlConfigFilePath)] : [];
         $this->cache->write(sprintf('<?php return %s;', var_export($this->config, true)), $resources);

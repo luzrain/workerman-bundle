@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Luzrain\WorkermanBundle\Test;
+
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ProcessTest extends KernelTestCase

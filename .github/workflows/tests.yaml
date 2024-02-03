@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         operating-system: ['ubuntu-latest', 'windows-latest', 'macos-latest']
-        php-versions: ['8.1', '8.2']
+        php-versions: ['8.2', '8.3']
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -24,6 +24,9 @@ jobs:
 
       - name: Create var dir
         run: mkdir var
+
+      - name: Composer validate
+        run: composer validate --strict
 
       - name: Composer install
         run: composer install
