@@ -16,7 +16,6 @@ final class Runner implements RunnerInterface
 {
     public function __construct(
         private KernelFactory $kernelFactory,
-        private bool $extendedInterface,
     ) {
     }
 
@@ -48,7 +47,6 @@ final class Runner implements RunnerInterface
         }
 
         TcpConnection::$defaultMaxPackageSize = $config['max_package_size'];
-        Worker::$extendedUi = $this->extendedInterface;
         Worker::$pidFile = $config['pid_file'];
         Worker::$logFile = $config['log_file'];
         Worker::$stdoutFile = $config['stdout_file'];
