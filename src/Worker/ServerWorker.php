@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\Utils;
+use Workerman\Worker;
 
 final class ServerWorker
 {
@@ -47,7 +47,7 @@ final class ServerWorker
         $worker->count = $serverConfig['processes'] ?? Utils::cpuCount() * 2;
         $worker->transport = $transport;
         $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $serverConfig) {
-            $worker->doLog(sprintf('"%s" started', $serverConfig['name']));
+            $worker->log(sprintf('%s "%s" started', $worker->name, $serverConfig['name']));
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();
             $worker->onMessage = $kernel->getContainer()->get('workerman.http_request_handler');

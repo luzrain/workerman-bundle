@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\Scheduler\TaskHandler;
 use Luzrain\WorkermanBundle\Scheduler\Trigger\TriggerFactory;
 use Luzrain\WorkermanBundle\Scheduler\Trigger\TriggerInterface;
 use Luzrain\WorkermanBundle\Utils;
 use Workerman\Timer;
+use Workerman\Worker;
 
 final class SchedulerWorker
 {
@@ -28,7 +28,7 @@ final class SchedulerWorker
         $this->worker->count = 1;
         $this->worker->reloadable = true;
         $this->worker->onWorkerStart = function () use ($kernelFactory, $schedulerConfig) {
-            $this->worker->doLog('started');
+            $this->worker->log($this->worker->name . 'started');
             pcntl_signal(SIGCHLD, SIG_IGN);
             $kernel = $kernelFactory->createKernel();
             $kernel->boot();
@@ -38,18 +38,18 @@ final class SchedulerWorker
                 $taskName = empty($serviceConfig['name']) ? $serviceId : $serviceConfig['name'];
 
                 if (empty($serviceConfig['schedule'])) {
-                    $this->worker->doLog(sprintf('Task "%s" skipped. Trigger has not been set', $taskName), 'WARNING');
+                    $this->worker->log(sprintf('%s Task "%s" skipped. Trigger has not been set', $this->worker->name, $taskName));
                     continue;
                 }
 
                 try {
                     $trigger = TriggerFactory::create($serviceConfig['schedule'], $serviceConfig['jitter'] ?? 0);
                 } catch (\InvalidArgumentException) {
-                    $this->worker->doLog(sprintf('Task "%s" skipped. Trigger "%s" is incorrect', $taskName, $serviceConfig['schedule']), 'WARNING');
+                    $this->worker->log(sprintf('%s Task "%s" skipped. Trigger "%s" is incorrect', $this->worker->name, $taskName, $serviceConfig['schedule']));
                     continue;
                 }
 
-                $this->worker->doLog(sprintf('Task "%s" scheduled. Trigger: "%s"', $taskName, $trigger));
+                $this->worker->log(sprintf('%s Task "%s" scheduled. Trigger: "%s"', $this->worker->name, $taskName, $trigger));
                 $method = empty($serviceConfig['method']) ? '__invoke' : $serviceConfig['method'];
                 $service = "$serviceId::$method";
                 $this->deleteTaskPid($service);
@@ -78,9 +78,9 @@ final class SchedulerWorker
 
         $pid = \pcntl_fork();
         if ($pid === -1) {
-            $this->worker->doLog(sprintf('Task "%s" call error!', $taskName), 'ERROR');
+            $this->worker->log(sprintf('%s Task "%s" call error!', $this->worker->name, $taskName));
         } elseif ($pid > 0) {
-            $this->worker->doLog(sprintf('Task "%s" called', $taskName));
+            $this->worker->log(sprintf('%s Task "%s" called', $this->worker->name, $taskName));
             $this->scheduleCallback($trigger, $service, $taskName);
         } else {
             // Child process start
@@ -103,7 +103,7 @@ final class SchedulerWorker
     {
         $pidFile = $this->getTaskPidPath($service);
         if (file_put_contents($pidFile, posix_getpid()) === false) {
-            $this->worker->doLog(sprintf('Can\'t save pid to %s', $pidFile), 'ERROR');
+            $this->worker->log(sprintf('%s Can\'t save pid to %s', $this->worker->name, $pidFile));
         }
     }
 

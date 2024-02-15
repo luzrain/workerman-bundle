@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher\FileMonitorWatcher;
+use Workerman\Worker;
 
 final class FileMonitorWorker
 {
@@ -20,7 +20,7 @@ final class FileMonitorWorker
         $worker->count = 1;
         $worker->reloadable = false;
         $worker->onWorkerStart = function (Worker $worker) use ($sourceDir, $filePattern) {
-            $worker->doLog('started');
+            $worker->log($worker->name . ' started');
             $fileMonitor = FileMonitorWatcher::create($worker, $sourceDir, $filePattern);
             $fileMonitor->start();
         };

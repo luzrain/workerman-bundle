@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
 
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\Utils;
+use Workerman\Worker;
 
 abstract class FileMonitorWatcher
 {

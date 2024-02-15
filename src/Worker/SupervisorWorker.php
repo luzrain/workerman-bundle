@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Worker;
 
-use Luzrain\WorkermanBundle\ExtendedWorker as Worker;
 use Luzrain\WorkermanBundle\KernelFactory;
 use Luzrain\WorkermanBundle\Supervisor\ProcessHandler;
+use Workerman\Worker;
 
 final class SupervisorWorker
 {
@@ -26,7 +26,7 @@ final class SupervisorWorker
             $worker->group = $group ?? '';
             $worker->count = $serviceConfig['processes'] ?? 1;
             $worker->onWorkerStart = function (Worker $worker) use ($kernelFactory, $serviceId, $serviceConfig, $taskName) {
-                $worker->doLog(sprintf('"%s" started', $taskName));
+                $worker->log(sprintf('%s "%s" started', $worker->name, $taskName));
                 $kernel = $kernelFactory->createKernel();
                 $kernel->boot();
                 /** @var ProcessHandler $handler */

@@ -6,7 +6,6 @@ use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Attribute\AsTask;
 use Luzrain\WorkermanBundle\ConfigLoader;
 use Luzrain\WorkermanBundle\Http\WorkermanHttpMessageFactory;
-use Luzrain\WorkermanBundle\KernelRunner;
 use Luzrain\WorkermanBundle\Reboot\Strategy\AlwaysRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\Strategy\ExceptionRebootStrategy;
 use Luzrain\WorkermanBundle\Reboot\Strategy\MaxJobsRebootStrategy;
@@ -21,7 +20,6 @@ use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 return static function (array $config, ContainerBuilder $container) {
     $container
@@ -78,11 +76,6 @@ return static function (array $config, ContainerBuilder $container) {
         ->setArguments([
             new Reference('logger'),
         ])
-    ;
-
-    $container
-        ->register('workerman.kernel_runner', KernelRunner::class)
-        ->setArguments([new Reference(KernelInterface::class)])
     ;
 
     $container->registerAttributeForAutoconfiguration(AsProcess::class, static function (ChildDefinition $definition, AsProcess $attribute) {
