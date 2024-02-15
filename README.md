@@ -52,10 +52,6 @@ workerman:
 
 ### Start application
 ```bash
-$ bin/console workerman:start
-```
-or
-```bash
 $ APP_RUNTIME=Luzrain\\WorkermanBundle\\Runtime php public/index.php start
 ```
 
@@ -133,15 +129,6 @@ final class TaskService
 }
 ```
 
-```yaml
-# config/services.yaml
-
-services:
-  App\TaskService:
-    tags:
-      - { name: '', schedule: '1 minutes' }
-```
-
 ## Supervisor
 Supervisor can be configured with attributes or with tags in configuration files.  
 Processes are kept alive and wake up if one of them dies.
@@ -165,13 +152,4 @@ final class ProcessService
         // ...
     }
 }
-```
-
-```yaml
-# config/services.yaml
-
-services:
-  App\ProcessService:
-    tags:
-      - { name: 'workerman.process', processes: 1 }
 ```

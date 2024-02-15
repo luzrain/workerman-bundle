@@ -6,10 +6,6 @@ namespace Luzrain\WorkermanBundle\DependencyInjection;
 
 use Luzrain\WorkermanBundle\Attribute\AsProcess;
 use Luzrain\WorkermanBundle\Attribute\AsTask;
-use Luzrain\WorkermanBundle\Command\ReloadCommand;
-use Luzrain\WorkermanBundle\Command\StartCommand;
-use Luzrain\WorkermanBundle\Command\StatusCommand;
-use Luzrain\WorkermanBundle\Command\StopCommand;
 use Luzrain\WorkermanBundle\ConfigLoader;
 use Luzrain\WorkermanBundle\Http\WorkermanHttpMessageFactory;
 use Luzrain\WorkermanBundle\KernelRunner;
@@ -96,43 +92,6 @@ final class WorkermanExtension extends Extension
         $container
             ->register('workerman.kernel_runner', KernelRunner::class)
             ->setArguments([new Reference(KernelInterface::class)])
-        ;
-
-        $container
-            ->register('workerman.command.start', StartCommand::class)
-            ->addTag('console.command')
-            ->addTag('monolog.logger', ['channel' => 'workerman'])
-            ->setArguments([
-                new Reference('workerman.kernel_runner'),
-                new Reference('logger'),
-                $config['pid_file'],
-            ])
-        ;
-
-        $container
-            ->register('workerman.command.stop', StopCommand::class)
-            ->addTag('console.command')
-            ->setArguments([
-                new Reference('workerman.kernel_runner'),
-                $config['pid_file'],
-            ])
-        ;
-
-        $container
-            ->register('workerman.command.status', StatusCommand::class)
-            ->addTag('console.command')
-            ->setArguments([
-                new Reference('workerman.kernel_runner'),
-                $config['pid_file'],
-            ])
-        ;
-
-        $container
-            ->register('workerman.command.restart', ReloadCommand::class)
-            ->addTag('console.command')
-            ->setArguments([
-                $config['pid_file'],
-            ])
         ;
 
         $container->registerAttributeForAutoconfiguration(AsProcess::class, $this->processConfig(...));
