@@ -4,21 +4,29 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle;
 
-use Luzrain\WorkermanBundle\DependencyInjection\CompilerPass;
-use Luzrain\WorkermanBundle\DependencyInjection\WorkermanExtension;
+use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-final class WorkermanBundle extends Bundle
+final class WorkermanBundle extends AbstractBundle
 {
-    public function build(ContainerBuilder $container): void
+    protected string $extensionAlias = 'workerman';
+
+    public function configure(DefinitionConfigurator $definition): void
     {
-        $container->addCompilerPass(new CompilerPass());
+        $configurator = require __DIR__ . '/config/configuration.php';
+        $configurator($definition);
     }
 
-    public function getContainerExtension(): ExtensionInterface
+    public function build(ContainerBuilder $container): void
     {
-        return new WorkermanExtension();
+        $container->addCompilerPass(require __DIR__ . '/config/compilerpass.php');
+    }
+
+    public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
+    {
+        $configurator = require __DIR__ . '/config/services.php';
+        $configurator($config, $builder);
     }
 }
