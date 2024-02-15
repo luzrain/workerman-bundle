@@ -61,7 +61,7 @@ final class RequestParametersTest extends KernelTestCase
             'headers' => [
                 'Content-Type' => 'multipart/form-data; boundary=OEZCxUAIiopEcaUw',
             ],
-            'body' => new MultipartStream(boundary: 'OEZCxUAIiopEcaUw11', elements: [
+            'body' => new MultipartStream(boundary: 'OEZCxUAIiopEcaUw', elements: [
                 [
                     'name' => 'test-file-1',
                     'filename' => 'test1.txt',

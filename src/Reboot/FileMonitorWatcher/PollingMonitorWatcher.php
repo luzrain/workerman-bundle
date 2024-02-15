@@ -9,7 +9,7 @@ use Workerman\Timer;
 final class PollingMonitorWatcher extends FileMonitorWatcher
 {
     private const POLLING_INTERVAL = 1;
-    private const TO_MANY_FILES_WARNING_LIMIT = 2;
+    private const TO_MANY_FILES_WARNING_LIMIT = 1000;
 
     private int $lastMTime;
     private bool $toManyFiles = false;
