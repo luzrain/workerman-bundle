@@ -7,6 +7,9 @@ namespace Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
 use Workerman\Timer;
 use Workerman\Worker;
 
+/**
+ * @psalm-suppress UndefinedConstant
+ */
 final class InotifyMonitorWatcher extends FileMonitorWatcher
 {
     private const REBOOT_DELAY = 0.33;

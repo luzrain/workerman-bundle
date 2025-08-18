@@ -6,6 +6,9 @@ namespace Luzrain\WorkermanBundle\Scheduler\Trigger;
 
 use Cron\CronExpression;
 
+/**
+ * @psalm-suppress UndefinedClass
+ */
 final class CronExpressionTrigger implements TriggerInterface
 {
     private CronExpression $expression;

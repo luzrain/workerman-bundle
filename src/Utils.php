@@ -24,6 +24,7 @@ final class Utils
             return 1;
         }
 
+        /** @psalm-suppress ForbiddenCode */
         return \strtolower(\PHP_OS) === 'darwin'
             ? (int) shell_exec('sysctl -n machdep.cpu.core_count')
             : (int) shell_exec('nproc')

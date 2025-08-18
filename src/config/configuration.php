@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 
-/** @php-cs-fixer-ignore */
+/**
+ * @php-cs-fixer-ignore
+ * @psalm-suppress UndefinedMethod
+ */
 return static function (DefinitionConfigurator $definition) {
     $definition->rootNode()
         ->addDefaultsIfNotSet()

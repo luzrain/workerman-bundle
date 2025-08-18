@@ -12,6 +12,9 @@ final class KernelFactory
     private string $environment;
     private bool $isDebug;
 
+    /**
+     * @psalm-suppress InvalidPropertyAssignmentValue
+     */
     public function __construct(private \Closure $app, private array $args, array $options)
     {
         $this->projectDir = $options['project_dir'];

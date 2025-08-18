@@ -102,7 +102,7 @@ final class SchedulerWorker
     private function saveTaskPid(string $service): void
     {
         $pidFile = $this->getTaskPidPath($service);
-        if (file_put_contents($pidFile, posix_getpid()) === false) {
+        if (file_put_contents($pidFile, (string) posix_getpid()) === false) {
             $this->worker->log(sprintf('%s Can\'t save pid to %s', $this->worker->name, $pidFile));
         }
     }

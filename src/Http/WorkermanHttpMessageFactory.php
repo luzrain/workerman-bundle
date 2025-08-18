@@ -78,6 +78,7 @@ final class WorkermanHttpMessageFactory
 
     /**
      * @return list<UploadedFileInterface>
+     * @psalm-suppress InvalidArrayOffset
      */
     private function normalizeNestedFileSpec(array $files = []): array
     {

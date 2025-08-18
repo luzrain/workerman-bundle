@@ -41,6 +41,7 @@ final class ConfigLoader implements CacheWarmerInterface
 
     private function getConfig(): array
     {
+        /** @psalm-suppress RedundantPropertyInitializationCheck */
         return $this->config ??= require $this->cache->getPath();
     }
 

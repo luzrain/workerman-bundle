@@ -32,7 +32,8 @@
         "guzzlehttp/guzzle": "^7.9.3",
         "nyholm/psr7": "^1.8.2",
         "phpunit/phpunit": "^10.5.52",
-        "symfony/framework-bundle": "^7.3.2"
+        "symfony/framework-bundle": "^7.3.2",
+        "vimeo/psalm": "^6.13"
     },
     "suggest": {
         "ext-event": "For better performance",
