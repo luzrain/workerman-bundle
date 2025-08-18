@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
 
-use Workerman\Events\EventInterface;
 use Workerman\Timer;
 use Workerman\Worker;
 
@@ -34,7 +33,7 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
             }
         }
 
-        Worker::$globalEvent->add($this->fd, EventInterface::EV_READ, $this->onNotify(...));
+        Worker::$globalEvent->onReadable($this->fd, $this->onNotify(...));
     }
 
     /**
