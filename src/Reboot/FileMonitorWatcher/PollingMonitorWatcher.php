@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Luzrain\WorkermanBundle\Reboot\FileMonitorWatcher;
 
-use Workerman\Timer;
-
 final class PollingMonitorWatcher extends FileMonitorWatcher
 {
     private const POLLING_INTERVAL = 1;
@@ -17,7 +15,7 @@ final class PollingMonitorWatcher extends FileMonitorWatcher
     public function start(): void
     {
         $this->lastMTime = time();
-        Timer::add(self::POLLING_INTERVAL, $this->checkFileSystemChanges(...));
+        $this->worker::$globalEvent?->repeat(self::POLLING_INTERVAL, $this->checkFileSystemChanges(...));
         $this->worker->log($this->worker->name . ' Polling file monitoring can be inefficient if the project has many files. Install the php-inotify extension to increase performance.');
     }
 
