@@ -48,7 +48,7 @@ final class InotifyMonitorWatcher extends FileMonitorWatcher
             return;
         }
 
-        foreach($events as $event) {
+        foreach ($events as $event) {
             if ($this->isFlagSet($event['mask'], IN_IGNORED)) {
                 unset($this->pathByWd[$event['wd']]);
                 continue;

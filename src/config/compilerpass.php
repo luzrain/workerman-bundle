@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-return new class () implements CompilerPassInterface {
+return new class implements CompilerPassInterface {
     public function process(ContainerBuilder $container): void
     {
         $tasks = array_map(fn(array $a) => $a[0], $container->findTaggedServiceIds('workerman.task'));

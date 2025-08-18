@@ -22,8 +22,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Create var dir
-        run: mkdir var
+      - name: Create dirs
+        run: mkdir var && mkdir var/log
 
       - name: Composer validate
         run: composer validate --strict
@@ -33,9 +33,6 @@ jobs:
 
       - name: Codestyle
         run: vendor/bin/php-cs-fixer fix -v --dry-run
-
-      - name: Start workerman server
-        run: APP_RUNTIME='Luzrain\WorkermanBundle\Runtime' php tests/App/index.php start -d
 
       - name: Tests
         run: vendor/bin/phpunit

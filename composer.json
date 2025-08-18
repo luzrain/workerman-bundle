@@ -12,7 +12,7 @@
         }
     ],
     "require": {
-        "php": "^8.1",
+        "php": ">=8.1",
         "ext-pcntl": "*",
         "ext-posix": "*",
         "league/mime-type-detection": "^1.13",
@@ -28,11 +28,11 @@
         "workerman/workerman": "^4.1"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.35",
-        "guzzlehttp/guzzle": "^7.8",
-        "nyholm/psr7": "^1.8",
-        "phpunit/phpunit": "^10.4",
-        "symfony/framework-bundle": "^7.0"
+        "friendsofphp/php-cs-fixer": "^3.86",
+        "guzzlehttp/guzzle": "^7.9.3",
+        "nyholm/psr7": "^1.8.2",
+        "phpunit/phpunit": "^10.5.52",
+        "symfony/framework-bundle": "^7.3.2"
     },
     "suggest": {
         "ext-event": "For better performance",
